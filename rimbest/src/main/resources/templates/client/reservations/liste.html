@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layouts/base}">
+
+<head>
+    <title>Mes Réservations - RIMBestStay</title>
+    <style>
+        .reservation-card {
+            border-left: 4px solid #0d6efd;
+        }
+
+        .confirmed {
+            border-left-color: #198754 !important;
+        }
+
+        .pending {
+            border-left-color: #ffc107 !important;
+        }
+
+        .cancelled {
+            border-left-color: #dc3545 !important;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <!-- En-tête -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-6">
+                    <i class="bi bi-calendar-check text-primary me-2"></i>Mes Réservations
+                </h1>
+                <p class="text-muted mb-0">Consultez et gérez toutes vos réservations</p>
+            </div>
+            <div>
+                <a th:href="@{/hotel/list}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Nouvelle Réservation
+                </a>
+            </div>
+            <div>
+            <a th:href="@{/dashboard}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-1"></i>Retour au dashboard
+            </a>
+            </div>
+        </div>
+
+        <!-- Messages flash -->
+        <div th:if="${param.success}" class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle me-2"></i>
+            <span th:text="${param.success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${param.error}" class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span th:text="${param.error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Filtres -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    <a th:href="@{/reservations/client}" class="btn"
+                        th:class="${statut == null} ? 'btn-primary' : 'btn-outline-primary'">
+                        Toutes <span class="badge bg-secondary" th:text="${totalItems}"></span>
+                    </a>
+                    <a th:href="@{/reservations/client(statut='CONFIRMEE')}" class="btn"
+                        th:class="${statut == 'CONFIRMEE'} ? 'btn-success' : 'btn-outline-success'">
+                        Confirmées
+                    </a>
+                    <a th:href="@{/reservations/client(statut='EN_ATTENTE')}" class="btn"
+                        th:class="${statut == 'EN_ATTENTE'} ? 'btn-warning' : 'btn-outline-warning'">
+                        En attente
+                    </a>
+                    <a th:href="@{/reservations/client(statut='ANNULEE')}" class="btn"
+                        th:class="${statut == 'ANNULEE'} ? 'btn-danger' : 'btn-outline-danger'">
+                        Annulées
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des réservations - VERSION SIMPLIFIÉE POUR LE DEBUG -->
+        <div th:if="${not #lists.isEmpty(reservations)}">
+            <div class="row">
+                <!-- DEBUG: Afficher le nombre total de réservations -->
+                <div class="col-12 mb-3">
+                    <div class="alert alert-info">
+                        <strong>DEBUG:</strong> Nombre de réservations à afficher: <span th:text="${reservations.size()}"></span>
+                        | Page courante: <span th:text="${currentPage}"></span>
+                        | Taille page: <span th:text="${pageSize}"></span>
+                    </div>
+                </div>
+                
+                <!-- Liste simple sans styles complexes -->
+                <div th:each="reservation : ${reservations}" class="col-12 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <!-- DEBUG: Afficher l'ID et la référence -->
+                            <div class="alert alert-secondary mb-3">
+                                <strong>Réservation #<span th:text="${reservation.id}"></span></strong><br>
+                                <strong>Référence:</strong> <span th:text="${reservation.reference}"></span><br>
+                                <strong>Statut:</strong> <span th:text="${reservation.statut}"></span>
+                            </div>
+                            
+                            <!-- Informations principales -->
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h5 class="card-title" th:text="${reservation.reference}">Référence</h5>
+                                    <p class="card-text">
+                                        <strong>Hôtel:</strong> <span th:text="${reservation.hotelNom ?: 'Non spécifié'}"></span><br>
+                                        <strong>Chambre:</strong> <span th:text="${reservation.chambreNumero ?: 'Non spécifiée'}"></span><br>
+                                        <strong>Dates:</strong> 
+                                        <span th:text="${#temporals.format(reservation.dateArrivee, 'dd/MM/yyyy')}"></span> au 
+                                        <span th:text="${#temporals.format(reservation.dateDepart, 'dd/MM/yyyy')}"></span><br>
+                                        <strong>Montant:</strong> <span th:text="${reservation.prixTotal} + ' MRU'"></span>
+                                    </p>
+                                </div>
+                                <div class="col-md-4">
+                                    <a th:href="@{/reservations/client/details/{id}(id=${reservation.id})}" 
+                                       class="btn btn-primary w-100 mb-2">
+                                        <i class="bi bi-eye me-2"></i>Voir détails
+                                    </a>
+                                    <div th:if="${reservation.statut == 'EN_ATTENTE'}">
+                                        <button class="btn btn-outline-danger w-100"
+                                                th:data-reservation-id="${reservation.id}"
+                                                th:data-reservation-ref="${reservation.reference}"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#cancelModal">
+                                            <i class="bi bi-x-circle me-2"></i>Annuler
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message si aucune réservation -->
+        <div th:if="${#lists.isEmpty(reservations)}" class="text-center py-5">
+            <div class="text-muted">
+                <i class="bi bi-calendar-check display-1 opacity-25"></i>
+                <h5 class="mt-3">Aucune réservation trouvée</h5>
+                <p class="mb-4">
+                    <span th:if="${statut}">Vous n'avez aucune réservation avec ce statut.</span>
+                    <span th:unless="${statut}">Vous n'avez pas encore effectué de réservation.</span>
+                </p>
+                <a th:href="@{/hotel/list}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-search me-2"></i>Rechercher un hôtel
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal d'annulation -->
+    <div class="modal fade" id="cancelModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-x-circle text-danger me-2"></i>
+                        Annuler la réservation
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/reservations/client/annuler/{id}(id=0)}" method="post" id="cancelForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <p>
+                                Êtes-vous sûr de vouloir annuler la réservation
+                                <strong id="reservationRef"></strong> ?
+                            </p>
+                            <p class="text-danger small">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Les frais d'annulation peuvent s'appliquer selon les conditions de votre réservation.
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label for="raison" class="form-label">Raison d'annulation (optionnel)</label>
+                            <textarea class="form-control" id="raison" name="raison" rows="3"
+                                placeholder="Ex: Changement de plans..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Retour</button>
+                        <button type="submit" class="btn btn-danger">Confirmer l'annulation</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div layout:fragment="scripts">
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Initialiser le modal d'annulation
+                const cancelModal = document.getElementById('cancelModal');
+                if (cancelModal) {
+                    cancelModal.addEventListener('show.bs.modal', function (event) {
+                        const button = event.relatedTarget;
+                        const reservationId = button.getAttribute('data-reservation-id');
+                        const reservationRef = button.getAttribute('data-reservation-ref');
+
+                        const modal = this;
+                        modal.querySelector('#reservationRef').textContent = reservationRef;
+
+                        const form = modal.querySelector('#cancelForm');
+                        form.action = form.action.replace('/0', '/' + reservationId);
+                    });
+                }
+
+                // Afficher les messages flash automatiquement
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    setTimeout(() => {
+                        bsAlert.close();
+                    }, 5000);
+                });
+            });
+        </script>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="hotel-card(hotel)" class="hotel-card-wrapper">
+    <div class="card hotel-card mb-4 shadow-sm border-0">
+        <div class="row g-0">
+            <!-- Image -->
+            <div class="col-md-4 position-relative">
+                <img th:src="${hotel.imageUrl}" 
+                     class="img-fluid rounded-start h-100 object-fit-cover" 
+                     th:alt="${hotel.nom}">
+                
+                <!-- Badge promotion -->
+                <div th:if="${hotel.promotionActive}" class="promotion-badge">
+                    <span th:text="${hotel.reductionFormatee}">-20%</span>
+                </div>
+                
+                <!-- Bouton favori -->
+                <button class="favorite-btn" onclick="toggleFavorite(this, '[[${hotel.id}]]')">
+                    <i class="bi bi-heart"></i>
+                </button>
+            </div>
+            
+            <!-- Contenu -->
+            <div class="col-md-8">
+                <div class="card-body h-100 d-flex flex-column">
+                    <!-- En-tête -->
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h5 class="card-title mb-1" th:text="${hotel.nom}">Nom de l'hôtel</h5>
+                            <p class="card-text text-muted small mb-2">
+                                <i class="bi bi-geo-alt"></i>
+                                <span th:text="${hotel.localisationComplete}">Ville, Pays</span>
+                            </p>
+                        </div>
+                        <div class="hotel-rating">
+                            <span class="stars text-warning" th:text="${hotel.etoilesDisplay}">★★★★★</span>
+                            <span class="badge bg-warning text-dark ms-2">
+                                <i class="bi bi-star-fill"></i>
+                                <span th:text="${hotel.noteFormatee}">8.5</span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Équipements -->
+                    <div class="hotel-equipments mb-3">
+                        <div class="d-flex flex-wrap gap-1">
+                            <span th:each="equipement : ${hotel.equipementsHotel}" 
+                                  class="badge bg-light text-dark">
+                                <i th:class="${#strings.contains(equipement, 'WIFI')} ? 'bi bi-wifi' : 
+                                            ${#strings.contains(equipement, 'POOL')} ? 'bi bi-water' :
+                                            ${#strings.contains(equipement, 'SPA')} ? 'bi bi-spa' : 'bi bi-check'">
+                                </i>
+                                <span th:text="${equipement}">WiFi</span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <p class="card-text flex-grow-1 mb-3" 
+                       th:text="${hotel.descriptionCourte}">
+                        Description courte de l'hôtel...
+                    </p>
+                    
+                    <!-- Pied de carte -->
+                    <div class="d-flex justify-content-between align-items-end mt-auto">
+                        <!-- Prix -->
+                        <div class="hotel-price">
+                            <div class="price-from small text-muted">À partir de</div>
+                            <div class="price-amount fw-bold text-primary fs-4">
+                                <span th:text="${hotel.prixFormate}">150€</span>
+                            </div>
+                            <div th:if="${hotel.promotionActive}" 
+                                 class="price-original small text-muted text-decoration-line-through">
+                                <span th:text="${#numbers.formatDecimal(hotel.prixMinimum, 0, 0)}">180</span>€
+                            </div>
+                            <div class="price-tax small text-muted">Taxes et frais inclus</div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="hotel-actions">
+                            <a th:href="@{/hotel/details/{id}(id=${hotel.id})}" 
+                               class="btn btn-outline-primary me-2">
+                                <i class="bi bi-eye me-1"></i>Voir détails
+                            </a>
+                            <a th:href="@{/reservation/create/{hotelId}(hotelId=${hotel.id})}" 
+                               class="btn btn-primary">
+                                <i class="bi bi-calendar-check me-1"></i>Réserver
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

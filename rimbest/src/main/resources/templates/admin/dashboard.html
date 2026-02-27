@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Administration - RIMBestStay</title>
+    <style>
+        .stats-card {
+            border-radius: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+        }
+        .stats-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important;
+        }
+        .card-subtitle {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .card-title {
+            font-weight: 700;
+        }
+        .opacity-50 {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <!-- En-tête Admin avec bouton Logout -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-6 text-danger">
+                    <i class="bi bi-shield-check me-2"></i>Tableau de bord Administrateur
+                </h1>
+                <p class="lead mb-0">
+                    Bienvenue, <span sec:authentication="name" class="fw-bold"></span> - 
+                    <span class="badge bg-danger">Administrateur</span>
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Statistiques Admin -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card stats-card border-danger border-2 shadow">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle text-muted mb-1">Utilisateurs</h6>
+                                <h3 class="card-title mb-0 fw-bold" th:text="${totalUsers}">1,254</h3>
+                            </div>
+                            <i class="bi bi-people display-5 text-danger opacity-50"></i>
+                        </div>
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Clients: <span th:text="${clientsCount}" class="fw-bold">0</span></small>
+                                <small class="text-muted">Partenaires: <span th:text="${partenairesCount}" class="fw-bold">0</span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card stats-card border-primary border-2 shadow">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle text-muted mb-1">Réservations</h6>
+                                <h3 class="card-title mb-0 fw-bold" th:text="${totalReservations}">0</h3>
+                            </div>
+                            <i class="bi bi-calendar-check display-5 text-primary opacity-50"></i>
+                        </div>
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">En attente: <span th:text="${pendingReservations}" class="fw-bold text-warning">0</span></small>
+                                <small class="text-muted">Aujourd'hui: <span th:text="${reservationsToday}" class="fw-bold text-info">0</span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card stats-card border-success border-2 shadow">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle text-muted mb-1">Revenus</h6>
+                                <h3 class="card-title mb-0 fw-bold" th:text="${revenueMonth} + ' MRU'">0 MRU</h3>
+                            </div>
+                            <i class="bi bi-currency-dollar display-5 text-success opacity-50"></i>
+                        </div>
+                        <div class="mt-3">
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted mt-2 d-block">Objectif mensuel: 75%</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card stats-card border-warning border-2 shadow">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle text-muted mb-1">Hôtels</h6>
+                                <h3 class="card-title mb-0 fw-bold" th:text="${totalHotels}">0</h3>
+                            </div>
+                            <i class="bi bi-building display-5 text-warning opacity-50"></i>
+                        </div>
+                        <div class="mt-3">
+                            <a th:href="@{/hotel/list}" class="btn btn-sm btn-outline-warning w-100">
+                                <i class="bi bi-eye me-1"></i>Voir tous les hôtels
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <!-- Actions rapides Admin avec LIENS FONCTIONNELS -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-gear me-2"></i>Actions d'administration
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-lg-3 col-md-6">
+                                <a th:href="@{/admin/users}" class="btn btn-danger w-100 h-100 py-3">
+                                    <i class="bi bi-people display-6 d-block mb-2"></i>
+                                    <span class="d-block fw-bold">Gérer utilisateurs</span>
+                                    <small class="d-block">Clients & Admins & Partenaires</small>
+                                </a>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <a th:href="@{/hotel/list}" class="btn btn-primary w-100 h-100 py-3">
+                                    <i class="bi bi-building display-6 d-block mb-2"></i>
+                                    <span class="d-block fw-bold">Gérer hôtels</span>
+                                    <small class="d-block">Partenaires & Offres</small>
+                                </a>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <a th:href="@{/reservations/admin}" class="btn btn-success w-100 h-100 py-3">
+                                    <i class="bi bi-receipt display-6 d-block mb-2"></i>
+                                    <span class="d-block fw-bold">Voir réservations</span>
+                                    <small class="d-block">Toutes les réservations</small>
+                                </a>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <a th:href="@{/admin/statistics}" class="btn btn-warning w-100 h-100 py-3">
+                                    <i class="bi bi-bar-chart display-6 d-block mb-2"></i>
+                                    <span class="d-block fw-bold">Statistiques</span>
+                                    <small class="d-block">Rapports & Analytics</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Hôtels (Nouveau pour Sprint 2) -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-building me-2"></i>Derniers Hôtels Ajoutés
+                            </h5>
+                            <a th:href="@{/hotel/add}" class="btn btn-light btn-sm">
+                                <i class="bi bi-plus-circle me-2"></i>Ajouter un Hôtel
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Ville</th>
+                                        <th>Étoiles</th>
+                                        <th>Partenaire</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="hotel : ${recentHotels}">
+                                        <td>
+                                            <a th:href="@{/hotel/details/{id}(id=${hotel.id})}" 
+                                               class="text-decoration-none">
+                                                <i class="bi bi-building me-2"></i>
+                                                <span th:text="${hotel.nom}"></span>
+                                            </a>
+                                        </td>
+                                        <td th:text="${hotel.ville}"></td>
+                                        <td>
+                                            <span class="star-rating">
+                                                <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                                    <i th:class="${i <= hotel.etoiles ? 'bi bi-star-fill text-warning' : 'bi bi-star text-muted'}"></i>
+                                                </span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${hotel.partenaire != null}" 
+                                                  th:text="${hotel.partenaire.nom}"></span>
+                                            <span th:unless="${hotel.partenaire != null}" 
+                                                  class="text-muted">Aucun</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${hotel.actif}" class="badge bg-success">Actif</span>
+                                            <span th:unless="${hotel.actif}" class="badge bg-danger">Inactif</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a th:href="@{/hotel/edit/{id}(id=${hotel.id})}" 
+                                                   class="btn btn-outline-warning">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a th:href="@{/chambre/list/{hotelId}(hotelId=${hotel.id})}" 
+                                                   class="btn btn-outline-info">
+                                                    <i class="bi bi-door-closed"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(recentHotels)}">
+                                        <td colspan="6" class="text-center text-muted py-4">
+                                            <i class="bi bi-building display-4 opacity-25"></i>
+                                            <h5 class="mt-3">Aucun hôtel trouvé</h5>
+                                            <p>Commencez par ajouter votre premier hôtel</p>
+                                            <a th:href="@{/hotel/add}" class="btn btn-primary">
+                                                <i class="bi bi-plus-circle me-2"></i>Ajouter un Hôtel
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+</body>
+</html>

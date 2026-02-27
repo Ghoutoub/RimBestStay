@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Fixé</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body { padding: 20px; background: #f8f9fa; }
+        .hotel-card { margin-bottom: 15px; border-radius: 10px; }
+        .test-info { background: #e7f3ff; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">✅ Test Fixé - Recherche avec Dates</h1>
+        
+        <!-- Informations de test -->
+        <div class="test-info">
+            <h5>📋 Paramètres de recherche:</h5>
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Ville:</strong><br>
+                    <span th:text="${ville ?: 'Non spécifiée'}" class="text-primary"></span>
+                </div>
+                <div class="col-md-3" th:if="${dateArrivee}">
+                    <strong>Arrivée:</strong><br>
+                    <span th:text="${dateArrivee}" class="text-success"></span>
+                </div>
+                <div class="col-md-3" th:if="${dateDepart}">
+                    <strong>Départ:</strong><br>
+                    <span th:text="${dateDepart}" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Voyageurs:</strong><br>
+                    <span th:text="${adultes} + ' adulte(s)'"></span>
+                    <span th:if="${enfants > 0}" th:text="', ' + ${enfants} + ' enfant(s)'"></span>
+                </div>
+            </div>
+            <div th:if="${nuits}" class="mt-2">
+                <span class="badge bg-info">
+                    <i class="bi bi-moon-stars"></i> <span th:text="${nuits}"></span> nuit(s)
+                </span>
+            </div>
+        </div>
+        
+        <!-- Résultats -->
+        <div class="alert alert-success">
+            <h5><i class="bi bi-building"></i> <span th:text="${totalHotels}"></span> hôtel(s) trouvé(s)</h5>
+        </div>
+        
+        <div th:if="${hotels != null and !hotels.empty}">
+            <div class="row">
+                <div th:each="hotel : ${hotels}" class="col-md-6">
+                    <div class="card hotel-card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${hotel.nom}"></h5>
+                            <p class="card-text text-muted">
+                                <i class="bi bi-geo-alt"></i>
+                                <span th:text="${hotel.ville}"></span>
+                                <span class="ms-3 text-warning">
+                                    <span th:each="i : ${#numbers.sequence(1, hotel.etoiles)}">
+                                        ★
+                                    </span>
+                                </span>
+                            </p>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-muted small">À partir de</div>
+                                    <div class="h4 text-success fw-bold">
+                                        <span th:text="${#numbers.formatDecimal(hotel.prix, 0, 'COMMA', 2, 'POINT')}"></span>€
+                                        <small class="text-muted fs-6">/nuit</small>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span th:if="${hotel.disponible}" 
+                                          class="badge bg-success">
+                                        <i class="bi bi-check-circle"></i> Disponible
+                                    </span>
+                                    <span th:unless="${hotel.disponible}" 
+                                          class="badge bg-danger">
+                                        <i class="bi bi-x-circle"></i> Complet
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tests rapides -->
+        <div class="mt-5">
+            <h4>🧪 Tests rapides:</h4>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <a href="/fixed-test/search?ville=Marrakech&dateArrivee=2026-01-25&dateDepart=2026-01-27&adultes=2&enfants=0" 
+                   class="btn btn-primary">
+                    Marrakech week-end
+                </a>
+                <a href="/fixed-test/search?ville=Casablanca&dateArrivee=2026-02-01&dateDepart=2026-02-05&adultes=1&enfants=0" 
+                   class="btn btn-primary">
+                    Casablanca affaires
+                </a>
+                <a href="/fixed-test/search?ville=Rabat&dateArrivee=2026-06-15&dateDepart=2026-06-22&adultes=4&enfants=2" 
+                   class="btn btn-primary">
+                    Rabat vacances
+                </a>
+                <a href="/fixed-test/search?ville=Marrakech" 
+                   class="btn btn-secondary">
+                    Marrakech sans dates
+                </a>
+            </div>
+        </div>
+        
+        <!-- Retour -->
+        <div class="mt-4">
+            <a href="/simple-test" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Retour aux tests simples
+            </a>
+        </div>
+    </div>
+</body>
+</html>

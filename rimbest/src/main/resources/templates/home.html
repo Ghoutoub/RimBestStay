@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Accueil - RIMBestStay</title>
+
+</head>
+<body>
+    <div layout:fragment="content">
+        <!-- Hero Section -->
+        <section class="hero-section bg-primary text-white py-5 mb-5">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <h1 class="display-4 fw-bold mb-4">
+                            Bienvenue sur <span class="text-warning">RIMBestStay</span>
+                        </h1>
+                        <p class="lead mb-4">
+                            Votre plateforme de réservation hôtelière préférée. 
+                            Trouvez les meilleurs hôtels, comparez les prix et réservez en toute sécurité.
+                        </p>
+                        <div class="d-flex flex-wrap gap-3">
+                            <a sec:authorize="!isAuthenticated()" th:href="@{/inscription}" 
+                               class="btn btn-warning btn-lg px-4">
+                                <i class="bi bi-person-plus me-2"></i>Créer un compte
+                            </a>
+                            <a sec:authorize="!isAuthenticated()" th:href="@{/login}" 
+                               class="btn btn-outline-light btn-lg px-4">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+                            </a>
+
+                        </div>
+                    </div>
+                    <!-- <div class="col-lg-6">
+                        <div class="text-center">
+                            <i class="bi bi-building display-1 text-warning"></i>
+                            <div class="mt-3">
+                                <h4>+500 Hôtels</h4>
+                                <p class="mb-0">À travers le Maroc</p>
+                            </div>
+                        </div>
+                    </div> -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features-section py-5">
+            <div class="container">
+                <h2 class="text-center mb-5">Pourquoi choisir RIMBestStay ?</h2>
+                
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <div class="feature-icon mb-3">
+                                    <i class="bi bi-search display-4 text-primary"></i>
+                                </div>
+                                <h4 class="card-title">Recherche facile</h4>
+                                <p class="card-text">
+                                    Trouvez l'hôtel parfait grâce à nos filtres avancés : 
+                                    localisation, prix, équipements, etc.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <div class="feature-icon mb-3">
+                                    <i class="bi bi-shield-check display-4 text-success"></i>
+                                </div>
+                                <h4 class="card-title">Paiement sécurisé</h4>
+                                <p class="card-text">
+                                    Transactions 100% sécurisées avec cryptage SSL. 
+                                    Plusieurs méthodes de paiement disponibles.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <div class="feature-icon mb-3">
+                                    <i class="bi bi-headset display-4 text-info"></i>
+                                </div>
+                                <h4 class="card-title">Support 24/7</h4>
+                                <p class="card-text">
+                                    Notre équipe est disponible 24h/24 et 7j/7 pour vous assister 
+                                    dans toutes vos réservations.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Popular Hotels Section -->
+
+
+        <!-- Stats Section -->
+        <section class="stats-section py-5">
+            <div class="container">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-4">
+                        <div class="display-4 fw-bold text-primary">500+</div>
+                        <p class="text-muted">Hôtels partenaires</p>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="display-4 fw-bold text-success">10,000+</div>
+                        <p class="text-muted">Réservations mensuelles</p>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="display-4 fw-bold text-warning">95%</div>
+                        <p class="text-muted">Clients satisfaits</p>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="display-4 fw-bold text-info">24/7</div>
+                        <p class="text-muted">Support disponible</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section py-5 bg-dark text-white">
+            <div class="container text-center">
+                <h2 class="mb-4">Prêt à réserver votre séjour ?</h2>
+                <p class="lead mb-4">
+                    Rejoignez notre communauté de voyageurs satisfaits et profitez 
+                    des meilleures offres hôtelières du Maroc.
+                </p>
+                <div class="d-flex justify-content-center flex-wrap gap-3">
+                    <a sec:authorize="!isAuthenticated()" th:href="@{/inscription}" 
+                       class="btn btn-warning btn-lg px-5">
+                        <i class="bi bi-person-plus me-2"></i>S'inscrire gratuitement
+                    </a>
+                    <a href="#" class="btn btn-outline-light btn-lg px-5">
+                        <i class="bi bi-question-circle me-2"></i>En savoir plus
+                    </a>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

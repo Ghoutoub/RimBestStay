@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Résultats de recherche - RIMBestStay</title>
+    <link rel="stylesheet" href="/css/search.css">
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container py-5">
+            <!-- En-tête -->
+            <div class="mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/search}" class="text-decoration-none">
+                                <i class="bi bi-arrow-left me-2"></i>Nouvelle recherche
+                            </a>
+                        </li>
+                    </ol>
+                </nav>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-1">Résultats de recherche</h1>
+                        <p class="text-muted mb-0">
+                            <span th:text="${totalHotels}"></span> hôtel(s) trouvé(s)
+                            <span th:if="${searchCriteria?.ville}">
+                                à <strong th:text="${searchCriteria.ville}"></strong>
+                            </span>
+                        </p>
+                        <small class="text-muted" th:if="${searchCriteria?.dateArrivee}">
+                            Du <span th:text="${#temporals.format(searchCriteria.dateArrivee, 'dd/MM/yyyy')}"></span>
+                            au <span th:text="${#temporals.format(searchCriteria.dateDepart, 'dd/MM/yyyy')}"></span>
+                            • 
+                            <span th:text="${searchCriteria.adultes}"></span> adulte(s)
+                            <span th:if="${searchCriteria.enfants > 0}">
+                                , <span th:text="${searchCriteria.enfants}"></span> enfant(s)
+                            </span>
+                        </small>
+                    </div>
+                    
+                    <!-- Lien retour -->
+                    <a th:href="@{/search}" class="btn btn-outline-primary">
+                        <i class="bi bi-search me-2"></i>Nouvelle recherche
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Résultats -->
+            <div th:if="${hotels != null and !hotels.empty}">
+                <div class="row">
+                    <!-- Liste des hôtels -->
+                    <div class="col-12">
+                        <div class="row row-cols-1 g-4">
+                            <div th:each="hotel : ${hotels}" class="col">
+                                <div class="card hotel-card shadow-sm border-0">
+                                    <div class="row g-0">
+                                        <!-- Image -->
+                                        <div class="col-md-4">
+                                            <img th:src="${hotel.imageUrl}" 
+                                                 class="img-fluid rounded-start h-100"
+                                                 style="object-fit: cover; min-height: 250px;"
+                                                 alt="Image de l'hôtel">
+                                        </div>
+                                        
+                                        <!-- Détails -->
+                                        <div class="col-md-8">
+                                            <div class="card-body h-100 d-flex flex-column">
+                                                <!-- En-tête -->
+                                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                                    <div>
+                                                        <h5 class="card-title mb-1" th:text="${hotel.nom}"></h5>
+                                                        <div class="mb-2">
+                                                            <span class="text-warning">
+                                                                <span th:each="i : ${#numbers.sequence(1, hotel.etoiles)}">
+                                                                    ★
+                                                                </span>
+                                                            </span>
+                                                            <span class="ms-2 badge bg-light text-dark border">
+                                                                <i class="bi bi-star-fill text-warning me-1"></i>
+                                                                <span th:text="${hotel.noteMoyenne != null ? hotel.noteMoyenne : 'N/A'}"></span>/10
+                                                            </span>
+                                                        </div>
+                                                        <p class="card-text text-muted mb-0">
+                                                            <i class="bi bi-geo-alt me-1"></i>
+                                                            <span th:text="${hotel.ville}"></span>, 
+                                                            <span th:text="${hotel.pays}"></span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Description -->
+                                                <p class="card-text flex-grow-1" 
+                                                   th:text="${hotel.descriptionCourte != null ? hotel.descriptionCourte : 'Description non disponible'}">
+                                                </p>
+                                                
+                                                <!-- Équipements -->
+                                                <div class="mb-3" th:if="${hotel.equipementsHotel != null}">
+                                                    <div class="d-flex flex-wrap gap-1">
+                                                        <span th:each="equipement : ${hotel.equipementsHotel}" 
+                                                              th:if="${equipement.length() > 0}"
+                                                              class="badge bg-light text-dark border">
+                                                            <span th:switch="${equipement}">
+                                                                <span th:case="'WIFI'">
+                                                                    <i class="bi bi-wifi me-1"></i>WiFi
+                                                                </span>
+                                                                <span th:case="'POOL'">
+                                                                    <i class="bi bi-water me-1"></i>Piscine
+                                                                </span>
+                                                                <span th:case="'SPA'">
+                                                                    <i class="bi bi-flower1 me-1"></i>SPA
+                                                                </span>
+                                                                <span th:case="'PARKING'">
+                                                                    <i class="bi bi-p-square me-1"></i>Parking
+                                                                </span>
+                                                                <span th:case="default" th:text="${equipement}"></span>
+                                                            </span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Prix et action -->
+                                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                                    <div>
+                                                        <div class="text-muted small">À partir de</div>
+                                                        <div class="h4 text-success fw-bold mb-0">
+                                                            <span th:text="${hotel.prixMinimum != null ? #numbers.formatDecimal(hotel.prixMinimum, 0, 'DEFAULT', 2, 'DEFAULT') + '€' : 'Sur demande'}"></span>
+                                                            <small class="text-muted fs-6">/nuit</small>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <a th:href="@{/hotel/details/{id}(id=${hotel.id})}" 
+                                                           class="btn btn-primary px-4 py-2">
+                                                            <i class="bi bi-eye me-2"></i>Voir détails
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="mt-5" th:if="${totalPages > 1}">
+                    <nav aria-label="Navigation des pages">
+                        <ul class="pagination justify-content-center">
+                            <!-- Page précédente -->
+                            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                                <a class="page-link" th:href="@{/search/results(ville=${searchCriteria.ville}, 
+                                                                            dateArrivee=${searchCriteria.dateArrivee}, 
+                                                                            dateDepart=${searchCriteria.dateDepart},
+                                                                            adultes=${searchCriteria.adultes},
+                                                                            enfants=${searchCriteria.enfants},
+                                                                            chambres=${searchCriteria.chambres},
+                                                                            prixMin=${searchCriteria.prixMin},
+                                                                            prixMax=${searchCriteria.prixMax},
+                                                                            etoilesMin=${searchCriteria.etoilesMin},
+                                                                            triPar=${searchCriteria.triPar},
+                                                                            page=${currentPage - 1})}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            
+                            <!-- Pages numérotées -->
+                            <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                                class="page-item" 
+                                th:classappend="${i == currentPage} ? 'active' : ''">
+                                <a class="page-link" 
+                                   th:href="@{/search/results(ville=${searchCriteria.ville}, 
+                                                            dateArrivee=${searchCriteria.dateArrivee}, 
+                                                            dateDepart=${searchCriteria.dateDepart},
+                                                            adultes=${searchCriteria.adultes},
+                                                            enfants=${searchCriteria.enfants},
+                                                            chambres=${searchCriteria.chambres},
+                                                            prixMin=${searchCriteria.prixMin},
+                                                            prixMax=${searchCriteria.prixMax},
+                                                            etoilesMin=${searchCriteria.etoilesMin},
+                                                            triPar=${searchCriteria.triPar},
+                                                            page=${i})}"
+                                   th:text="${i + 1}"></a>
+                            </li>
+                            
+                            <!-- Page suivante -->
+                            <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled' : ''">
+                                <a class="page-link" th:href="@{/search/results(ville=${searchCriteria.ville}, 
+                                                                            dateArrivee=${searchCriteria.dateArrivee}, 
+                                                                            dateDepart=${searchCriteria.dateDepart},
+                                                                            adultes=${searchCriteria.adultes},
+                                                                            enfants=${searchCriteria.enfants},
+                                                                            chambres=${searchCriteria.chambres},
+                                                                            prixMin=${searchCriteria.prixMin},
+                                                                            prixMax=${searchCriteria.prixMax},
+                                                                            etoilesMin=${searchCriteria.etoilesMin},
+                                                                            triPar=${searchCriteria.triPar},
+                                                                            page=${currentPage + 1})}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            
+            <!-- Aucun résultat -->
+            <div th:if="${hotels == null or hotels.empty}" class="text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-search display-1 text-muted"></i>
+                </div>
+                <h3 class="mb-3">Aucun hôtel trouvé</h3>
+                <p class="text-muted mb-4">
+                    Aucun hôtel ne correspond à vos critères de recherche. 
+                    Essayez d'élargir votre recherche.
+                </p>
+                <a th:href="@{/search}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-search me-2"></i>Nouvelle recherche
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

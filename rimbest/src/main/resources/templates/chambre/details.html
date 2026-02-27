@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layouts/base}">
+
+<head>
+    <title th:text="'Chambre ' + ${chambre.numero} + ' - RIMBestStay'">Détails Chambre</title>
+    <style>
+        .room-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 30px 0;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .room-feature {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .calendar-day {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            margin: 2px;
+        }
+
+        .calendar-day.available {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .calendar-day.occupied {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .calendar-day.today {
+            border: 2px solid #0d6efd;
+        }
+    </style>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <!-- En-tête -->
+        <div class="room-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="display-5 fw-bold">
+                            Chambre <span th:text="${chambre.numero}"></span>
+                            <span class="badge bg-light text-dark ms-2" th:text="${chambre.typeChambre}"></span>
+                        </h1>
+                        <div class="d-flex align-items-center mt-3">
+                            <div class="me-4">
+                                <i class="bi bi-building me-2"></i>
+                                <a th:href="@{/hotel/details/{id}(id=${chambre.hotel.id})}"
+                                    class="text-white text-decoration-none">
+                                    <span th:text="${chambre.hotel.nom}"></span>
+                                </a>
+                            </div>
+                            <div class="me-4">
+                                <i class="bi bi-people me-2"></i>
+                                <span th:text="${chambre.capacite} + ' personne(s)'"></span>
+                            </div>
+                            <div>
+                                <i class="bi bi-cash-coin me-2"></i>
+                                <span th:text="${chambre.prixNuit} + ' MRU/nuit'"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div sec:authorize="hasRole('ADMIN') or hasRole('PARTENAIRE')" class="btn-group">
+                            <a th:href="@{/chambre/edit/{id}(id=${chambre.id})}" class="btn btn-light me-2">
+                                <i class="bi bi-pencil"></i> Modifier
+                            </a>
+                            <a th:href="@{/chambre/list/{hotelId}(hotelId=${chambre.hotel.id})}"
+                                class="btn btn-outline-light">
+                                <i class="bi bi-arrow-left"></i> Retour
+                            </a>
+                        </div>
+                        <div sec:authorize="hasRole('CLIENT')">
+                            <a th:href="@{/reservations/client/nouvelle/{id}(id=${chambre.id})}"
+                                class="btn btn-warning btn-lg">
+                                <i class="bi bi-calendar-plus me-2"></i> Réserver maintenant
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                <!-- Informations principales -->
+                <div class="col-lg-8">
+                    <!-- Photos -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="bi bi-images text-primary me-2"></i>Photos
+                            </h5>
+                            <div th:if="${chambre.imageList != null and !chambre.imageList.isEmpty()}" id="roomCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-indicators">
+                                    <button th:each="image, iterStat : ${chambre.imageList}"
+                                            type="button" 
+                                            data-bs-target="#roomCarousel" 
+                                            th:data-bs-slide-to="${iterStat.index}"
+                                            th:class="${iterStat.first} ? 'active' : ''" 
+                                            th:aria-current="${iterStat.first} ? 'true' : null"
+                                            th:aria-label="'Slide ' + ${iterStat.index + 1}"></button>
+                                </div>
+                                <div class="carousel-inner rounded">
+                                    <div th:each="image, iterStat : ${chambre.imageList}" 
+                                         th:class="${'carousel-item ' + (iterStat.first ? 'active' : '')}">
+                                        <img th:src="@{${image}}" class="d-block w-100" style="height: 450px; object-fit: cover;" alt="Photo chambre">
+                                    </div>
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#roomCarousel"
+                                    data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon"></span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#roomCarousel"
+                                    data-bs-slide="next">
+                                    <span class="carousel-control-next-icon"></span>
+                                </button>
+                            </div>
+                            
+                            <!-- Message si aucune image -->
+                            <div th:unless="${chambre.imageList != null and !chambre.imageList.isEmpty()}" class="text-center py-5">
+                                <i class="bi bi-image text-muted display-1"></i>
+                                <p class="text-muted mt-3">Aucune photo disponible pour cette chambre</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="bi bi-card-text text-primary me-2"></i>Description
+                            </h5>
+                            <p th:text="${chambre.description} ?: 'Aucune description disponible.'" class="card-text">
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Équipements -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="bi bi-tools text-primary me-2"></i>Équipements & Services
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="room-feature">
+                                        <i class="bi bi-wifi feature-icon text-primary"></i>
+                                        <h6>WiFi Gratuit</h6>
+                                        <small class="text-muted">Haute vitesse</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="room-feature">
+                                        <i class="bi bi-tv feature-icon text-primary"></i>
+                                        <h6>Télévision LED</h6>
+                                        <small class="text-muted">Chaînes internationales</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="room-feature">
+                                        <i class="bi bi-thermometer-snow feature-icon text-primary"></i>
+                                        <h6>Climatisation</h6>
+                                        <small class="text-muted">Contrôle individuel</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="room-feature">
+                                        <i class="bi bi-safe feature-icon text-primary"></i>
+                                        <h6>Coffre-fort</h6>
+                                        <small class="text-muted">Sécurisé</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Statut -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="bi bi-info-circle text-primary me-2"></i>Statut
+                            </h5>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>Disponibilité:</span>
+                                    <span th:if="${chambre.disponible}" class="badge bg-success">
+                                        <i class="bi bi-check-circle me-1"></i>Disponible
+                                    </span>
+                                    <span th:unless="${chambre.disponible}" class="badge bg-danger">
+                                        <i class="bi bi-x-circle me-1"></i>Occupée
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>Nettoyage:</span>
+                                    <span class="badge bg-info" th:text="${chambre.statutNettoyage}"></span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>Superficie:</span>
+                                    <span class="fw-bold" th:text="${chambre.superficie} + ' m²'"></span>
+                                </div>
+                            </div>
+
+                            <!-- Actions Admin -->
+                            <div sec:authorize="hasRole('ADMIN')" class="d-grid gap-2">
+                                <a th:href="@{/chambre/edit/{id}(id=${chambre.id})}" class="btn btn-warning">
+                                    <i class="bi bi-pencil me-2"></i>Modifier
+                                </a>
+                                <a th:href="@{/reservation/new?chambreId={id}(id=${chambre.id})}"
+                                    class="btn btn-success">
+                                    <i class="bi bi-calendar-plus me-2"></i>Créer Réservation
+                                </a>
+                                <button class="btn btn-outline-danger"
+                                    th:onclick="'confirmDelete(' + ${chambre.id} + ')'">
+                                    <i class="bi bi-trash me-2"></i>Supprimer
+                                </button>
+                            </div>
+
+                            <!-- Actions Client -->
+                            <div sec:authorize="hasRole('CLIENT')" class="d-grid gap-2">
+                                <a class="btn btn-primary"  th:href="@{/reservations/client/nouvelle/{id}(id=${chambre.id})}">
+                                    <i class="bi bi-calendar-plus me-2"></i>Réserver
+                                </a>
+                                <button class="btn btn-outline-primary">
+                                    <i class="bi bi-heart me-2"></i>Ajouter aux Favoris
+                                </button>
+                                <button class="btn btn-outline-secondary">
+                                    <i class="bi bi-share me-2"></i>Partager
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dans chambre/details.html -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="bi bi-info-circle text-primary me-2"></i>Statut
+                            </h5>
+
+                            <!-- Vérification de disponibilité DYNAMIQUE - Simplifiée -->
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>Disponibilité aujourd'hui:</span>
+                                    <span th:if="${chambre.disponible}" class="badge bg-success">
+                                        <i class="bi bi-check-circle me-1"></i>Disponible
+                                    </span>
+                                    <span th:unless="${chambre.disponible}" class="badge bg-danger">
+                                        <i class="bi bi-x-circle me-1"></i>Occupée
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Statut de base (en service/maintenance) -->
+                            <div sec:authorize="hasRole('ADMIN')" class="d-flex justify-content-between align-items-center mb-2">
+                                <span>En service:</span>
+                                <span th:if="${chambre.disponible}" class="badge bg-info">
+                                    <i class="bi bi-check me-1"></i>Oui
+                                </span>
+                                <span th:unless="${chambre.disponible}" class="badge bg-warning">
+                                    <i class="bi bi-x me-1"></i>Maintenance
+                                </span>
+                            </div>
+
+                            <!-- Actions -->
+                            <div sec:authorize="hasRole('ADMIN')" class="d-grid gap-2 mt-4">
+                                <!-- Pour Admin/Partenaire : Changer statut de service -->
+                                <form th:action="@{/chambre/toggle-disponibilite/{id}(id=${chambre.id})}" method="post"
+                                    class="d-grid">
+                                    <button type="submit" class="btn btn-outline-warning">
+                                        <span th:if="${chambre.disponible}">
+                                            <i class="bi bi-wrench me-2"></i>Mettre en maintenance
+                                        </span>
+                                        <span th:unless="${chambre.disponible}">
+                                            <i class="bi bi-check-circle me-2"></i>Remettre en service
+                                        </span>
+                                    </button>
+                                </form>
+
+                                <!-- Pour Client : Réserver -->
+                                <div sec:authorize="hasRole('CLIENT')">
+                                    <a th:href="@{/reservations/client/nouvelle/{id}(id=${chambre.id})}"
+                                        class="btn btn-primary">
+                                        <i class="bi bi-calendar-plus me-2"></i>Réserver maintenant
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations tarifaires -->
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="bi bi-cash-coin text-primary me-2"></i>Tarifs
+                            </h5>
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item d-flex justify-content-between">
+                                    <span>Prix par nuit</span>
+                                    <span class="fw-bold" th:text="${chambre.prixNuit} + ' MRU'"></span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between">
+                                    <span>Prix weekend</span>
+                                    <span class="fw-bold"
+                                        th:text="${chambre.prixWeekend ?: chambre.prixNuit} + ' MRU'"></span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between">
+                                    <span>Taxe de séjour</span>
+                                    <span class="fw-bold">20 MRU/pers</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between">
+                                    <span>Dépôt garantie</span>
+                                    <span class="fw-bold" th:text="${chambre.depotGarantie ?: '500'} + ' MRU'"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Réservations récentes -->
+            <!-- <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-calendar-check me-2"></i>Réservations récentes
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Référence</th>
+                                            <th>Client</th>
+                                            <th>Dates</th>
+                                            <th>Montant</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>RES-2025-045</td>
+                                            <td>Ahmed Benani</td>
+                                            <td>25-28 Déc 2025</td>
+                                            <td>1,500 MRU</td>
+                                            <td><span class="badge bg-success">Confirmée</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>RES-2025-044</td>
+                                            <td>Fatima Zahra</td>
+                                            <td>20-22 Déc 2025</td>
+                                            <td>900 MRU</td>
+                                            <td><span class="badge bg-warning">En attente</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-warning">
+                                                    <i class="bi bi-clock"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+
+        <!-- Modal de réservation -->
+        <div class="modal fade" id="reservationModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-calendar-plus me-2"></i>
+                            Réserver la Chambre <span th:text="${chambre.numero}"></span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="reservationForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Date d'arrivée</label>
+                                    <input type="date" class="form-control" name="dateArrivee" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Date de départ</label>
+                                    <input type="date" class="form-control" name="dateDepart" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Nombre de personnes</label>
+                                    <input type="number" class="form-control" name="nombrePersonnes"
+                                        th:max="${chambre.capacite}" min="1" th:value="${chambre.capacite > 1 ? 2 : 1}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Total estimé</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="totalEstime" value="0 MRU" readonly>
+                                        <span class="input-group-text">TTC</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-primary">Procéder au paiement</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div layout:fragment="scripts">
+        <script>
+            function confirmDelete(chambreId) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette chambre ? Toutes les réservations associées seront annulées.')) {
+                    fetch('/chambre/delete/' + chambreId, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').getAttribute('content')
+                        }
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                window.location.href = '/chambre/list/' + /*[[${chambre.hotel.id}]]*/ '';
+                            } else {
+                                alert('Erreur lors de la suppression');
+                            }
+                        });
+                }
+            }
+
+            // Initialiser le carousel
+            document.addEventListener('DOMContentLoaded', function () {
+                const roomCarouselElement = document.getElementById('roomCarousel');
+                if (roomCarouselElement) {
+                    const carousel = new bootstrap.Carousel(roomCarouselElement, {
+                        interval: 3000
+                    });
+                }
+
+                // Calculer le prix en fonction des dates
+                const dateInputs = document.querySelectorAll('input[type="date"]');
+                dateInputs.forEach(input => {
+                    input.addEventListener('change', calculateTotal);
+                });
+
+                function calculateTotal() {
+                    const prixNuit = /*[[${chambre.prixNuit}]]*/ 0;
+                    const dateArrivee = document.querySelector('input[name="dateArrivee"]').value;
+                    const dateDepart = document.querySelector('input[name="dateDepart"]').value;
+
+                    if (dateArrivee && dateDepart) {
+                        const diffTime = Math.abs(new Date(dateDepart) - new Date(dateArrivee));
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        const total = diffDays * prixNuit;
+                        document.getElementById('totalEstime').value = total + ' MRU';
+                    }
+                }
+            });
+        </script>
+    </div>
+</body>
+
+</html>

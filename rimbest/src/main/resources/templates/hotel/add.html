@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/base}">
+
+<head>
+    <title>Ajouter un Hôtel - RIMBestStay</title>
+    <style>
+        .form-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .star-rating .bi-star {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #dee2e6;
+        }
+
+        .star-rating .bi-star-fill {
+            color: #ffc107;
+        }
+    </style>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <!-- En-tête -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-6">
+                    <i class="bi bi-plus-circle text-success me-2"></i>Ajouter un Nouvel Hôtel
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/dashboard}">Tableau de bord</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/hotel/list}">Hôtels</a></li>
+                        <li class="breadcrumb-item active">Nouvel Hôtel</li>
+                    </ol>
+                </nav>
+            </div>
+            <a th:href="@{/hotel/list}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Retour
+            </a>
+        </div>
+
+        <!-- Formulaire d'ajout -->
+        <div class="card shadow">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-building me-2"></i>Informations de l'Hôtel
+                </h5>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/hotel/add}" th:object="${hotel}" method="post" enctype="multipart/form-data" id="hotelForm">
+                    <!-- Section Informations de base -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-info-circle me-2"></i>Informations de base
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="nom" class="form-label">
+                                    Nom de l'hôtel <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="nom" th:field="*{nom}"
+                                    placeholder="Ex: Hôtel Plaza Marrakech" required>
+                                <div class="form-text">Le nom officiel de votre établissement</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Classification</label>
+                                <div class="star-rating mb-3">
+                                    <input type="hidden" th:field="*{etoiles}" id="etoilesValue">
+                                    <div class="d-flex">
+                                        <i class="bi bi-star" data-rating="1" onclick="setRating(1)"></i>
+                                        <i class="bi bi-star" data-rating="2" onclick="setRating(2)"></i>
+                                        <i class="bi bi-star" data-rating="3" onclick="setRating(3)"></i>
+                                        <i class="bi bi-star" data-rating="4" onclick="setRating(4)"></i>
+                                        <i class="bi bi-star" data-rating="5" onclick="setRating(5)"></i>
+                                    </div>
+                                    <small class="text-muted">Sélectionnez le nombre d'étoiles (1-5)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section Localisation -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-geo-alt me-2"></i>Localisation
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="pays" class="form-label">
+                                    Pays <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="pays" th:field="*{pays}" required>
+                                    <option value="">Sélectionnez un pays</option>
+                                    <option value="Mauritania">Mauritania</option>
+                                    <option value="Maroc">Maroc</option>
+                                    <option value="France">France</option>
+                                    <option value="Espagne">Espagne</option>
+                                    <option value="Tunisie">Tunisie</option>
+                                    <option value="Algérie">Algérie</option>
+                                    <option value="Autre">Autre</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="ville" class="form-label">
+                                    Ville <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="ville" th:field="*{ville}"
+                                    placeholder="Ex: Marrakech" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="adresse" class="form-label">
+                                    Adresse complète
+                                </label>
+                                <input type="text" class="form-control" id="adresse" th:field="*{adresse}"
+                                    placeholder="Ex: Avenue Mohammed VI, N°123">
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Section Contact -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-telephone me-2"></i>Contact
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="telephone" class="form-label">
+                                    Téléphone <span class="text-danger">*</span>
+                                </label>
+                                <input type="tel" class="form-control" id="telephone" th:field="*{telephone}"
+                                    placeholder="Ex: +212 522 123456" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">
+                                    Email <span class="text-danger">*</span>
+                                </label>
+                                <input type="email" class="form-control" id="email" th:field="*{email}"
+                                    placeholder="Ex: contact@hotel.com" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section Description -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-card-text me-2"></i>Description
+                        </h5>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description détaillée</label>
+                            <textarea class="form-control" id="description" th:field="*{description}" rows="4"
+                                placeholder="Décrivez votre établissement..."></textarea>
+                            <div class="form-text">
+                                Décrivez les équipements, services, et avantages de votre hôtel
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section Statut -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-toggle-on me-2"></i>Statut
+                        </h5>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="actif" th:field="*{actif}"
+                                checked>
+                            <label class="form-check-label" for="actif">
+                                Activer l'hôtel immédiatement
+                            </label>
+                            <div class="form-text">
+                                Si désactivé, l'hôtel ne sera pas visible par les clients
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section Images -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-images me-2"></i>Images de l'hôtel
+                        </h5>
+                        <div class="mb-3">
+                            <label for="imageFiles" class="form-label">Télécharger des images</label>
+                            <input type="file" class="form-control" id="imageFiles" name="imageFiles" multiple
+                                accept="image/*" onchange="previewHotelImages(this, 'hotel-preview')">
+                            <div class="form-text">
+                                Formats supportés: JPG, PNG, GIF. Max 5MB par image.
+                                Première image sera utilisée comme image principale.
+                            </div>
+                        </div>
+
+                        <!-- Aperçu des images -->
+                        <div id="hotel-preview" class="row g-2 mt-2"></div>
+                    </div>
+                    <!-- Boutons d'action -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-outline-secondary w-100"
+                                onclick="window.history.back()">
+                                <i class="bi bi-x-circle me-2"></i>Annuler
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-save me-2"></i>Enregistrer l'Hôtel
+                            </button>
+                        </div>
+                    </div>
+
+
+                </form>
+            </div>
+        </div>
+
+        <!-- Mini-guide -->
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info bg-opacity-10">
+                <h6 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>Conseils pour un bon référencement
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>Utilisez des photos de haute qualité pour votre hôtel</li>
+                    <li>Décrivez précisément les services et équipements</li>
+                    <li>Mettez à jour régulièrement les disponibilités</li>
+                    <li>Répondez rapidement aux demandes de réservation</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div layout:fragment="scripts">
+        <script>
+            // Système de notation par étoiles
+            function setRating(rating) {
+                document.getElementById('etoilesValue').value = rating;
+                const stars = document.querySelectorAll('.star-rating .bi');
+
+                stars.forEach((star, index) => {
+                    if (index < rating) {
+                        star.classList.remove('bi-star');
+                        star.classList.add('bi-star-fill');
+                    } else {
+                        star.classList.remove('bi-star-fill');
+                        star.classList.add('bi-star');
+                    }
+                });
+            }
+
+            // Fonction pour prévisualiser les images
+            function previewHotelImages(input, previewId) {
+                const preview = document.getElementById(previewId);
+                preview.innerHTML = '';
+
+                if (input.files && input.files.length > 0) {
+                    for (let i = 0; i < input.files.length; i++) {
+                        const file = input.files[i];
+                        const reader = new FileReader();
+
+                        reader.onload = function (e) {
+                            const col = document.createElement('div');
+                            col.className = 'col-4 col-md-3';
+
+                            const card = document.createElement('div');
+                            card.className = 'card h-100';
+
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'card-img-top';
+                            img.style.height = '100px';
+                            img.style.objectFit = 'cover';
+
+                            const cardBody = document.createElement('div');
+                            cardBody.className = 'card-body p-2';
+
+                            const fileName = document.createElement('small');
+                            fileName.className = 'text-muted d-block text-truncate';
+                            fileName.textContent = file.name;
+
+                            const fileSize = document.createElement('small');
+                            fileSize.className = 'text-muted d-block';
+                            fileSize.textContent = (file.size / 1024).toFixed(2) + ' KB';
+
+                            cardBody.appendChild(fileName);
+                            cardBody.appendChild(fileSize);
+                            card.appendChild(img);
+                            card.appendChild(cardBody);
+                            col.appendChild(card);
+                            preview.appendChild(col);
+                        };
+
+                        reader.readAsDataURL(file);
+                    }
+                }
+            }
+
+            // Modifier la validation du formulaire pour inclure les images
+            document.addEventListener('DOMContentLoaded', function () {
+                const forms = document.querySelectorAll('form[id$="Form"]');
+
+                forms.forEach(form => {
+                    form.addEventListener('submit', function (e) {
+                        const imageInputs = form.querySelectorAll('input[type="file"][name*="image"]');
+
+                        imageInputs.forEach(input => {
+                            if (input.files && input.files.length > 0) {
+                                for (let file of input.files) {
+                                    // Vérifier la taille (5MB max)
+                                    if (file.size > 5 * 1024 * 1024) {
+                                        e.preventDefault();
+                                        alert(`L'image ${file.name} dépasse la taille maximale de 5MB`);
+                                        return;
+                                    }
+
+                                    // Vérifier le type
+                                    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                                    if (!allowedTypes.includes(file.type)) {
+                                        e.preventDefault();
+                                        alert(`Le format de l'image ${file.name} n'est pas supporté. Utilisez JPG, PNG ou GIF.`);
+                                        return;
+                                    }
+                                }
+                            }
+                        });
+                    });
+                });
+            });
+            // Initialiser les étoiles si déjà une valeur
+            document.addEventListener('DOMContentLoaded', function () {
+                const currentRating = document.getElementById('etoilesValue').value;
+                if (currentRating) {
+                    setRating(currentRating);
+                }
+            });
+
+            // Validation du formulaire
+            document.getElementById('hotelForm').addEventListener('submit', function (e) {
+                const nom = document.getElementById('nom').value;
+                const telephone = document.getElementById('telephone').value;
+
+                if (!nom.trim()) {
+                    e.preventDefault();
+                    alert('Le nom de l\'hôtel est obligatoire');
+                    return;
+                }
+
+                // Validation simple du téléphone
+                const phoneRegex = /^[\+]?[0-9\s\-\(\)]{8,20}$/;
+                if (!phoneRegex.test(telephone)) {
+                    e.preventDefault();
+                    alert('Veuillez entrer un numéro de téléphone valide');
+                    return;
+                }
+            });
+        </script>
+    </div>
+</body>
+
+</html>

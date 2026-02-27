@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title th:text="'Modifier Chambre ' + ${chambre.numero} + ' - RIMBestStay'">Modifier Chambre</title>
+    <style>
+        .form-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .section-title {
+            border-bottom: 2px solid #fd7e14;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .history-badge {
+            font-size: 0.75rem;
+        }
+        .reservation-timeline {
+            border-left: 3px solid #0d6efd;
+            padding-left: 20px;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: -26px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <!-- En-tête -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-6">
+                    <i class="bi bi-pencil-square text-warning me-2"></i>
+                    Modifier la Chambre: <span class="text-primary" th:text="'N°' + ${chambre.numero}"></span>
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/dashboard}">Tableau de bord</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/hotel/list}">Hôtels</a></li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/hotel/details/{id}(id=${chambre.hotel.id})}" 
+                               th:text="${chambre.hotel.nom}"></a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/chambre/list/{hotelId}(hotelId=${chambre.hotel.id})}">Chambres</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/chambre/details/{id}(id=${chambre.id})}" 
+                               th:text="'N°' + ${chambre.numero}"></a>
+                        </li>
+                        <li class="breadcrumb-item active">Modifier</li>
+                    </ol>
+                </nav>
+            </div>
+            <div>
+                <a th:href="@{/chambre/details/{id}(id=${chambre.id})}" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-eye me-2"></i>Voir
+                </a>
+                <a th:href="@{/chambre/list/{hotelId}(hotelId=${chambre.hotel.id})}" 
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Retour
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Formulaire -->
+            <div class="col-lg-8">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <form th:action="@{/chambre/edit/{id}(id=${chambre.id})}" th:object="${chambre}" 
+                              method="post" enctype="multipart/form-data" id="editForm">
+                            
+                            <!-- Informations de base -->
+                            <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="bi bi-info-circle me-2"></i>Informations
+                                </h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="numero" class="form-label">Numéro</label>
+                                        <input type="text" class="form-control" id="numero" th:field="*{numero}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="typeChambre" class="form-label">Type</label>
+                                        <select class="form-select" id="typeChambre" th:field="*{typeChambre}" required>
+                                            <option value="SIMPLE">Simple</option>
+                                            <option value="DOUBLE">Double</option>
+                                            <option value="TWIN">Twin</option>
+                                            <option value="SUITE">Suite</option>
+                                            <option value="DELUXE">Deluxe</option>
+                                            <option value="FAMILIALE">Familiale</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <label for="capacite" class="form-label">Capacité</label>
+                                        <input type="number" class="form-control" id="capacite" 
+                                               th:field="*{capacite}" min="1" max="10" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="superficie" class="form-label">Superficie (m²)</label>
+                                        <input type="number" class="form-control" id="superficie" 
+                                               th:field="*{superficie}" min="10" step="0.5">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tarification -->
+                            <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="bi bi-currency-dollar me-2"></i>Tarification
+                                </h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="prixNuit" class="form-label">Prix/nuit</label>
+                                        <input type="number" class="form-control" id="prixNuit" 
+                                               th:field="*{prixNuit}" step="0.01" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="prixWeekend" class="form-label">Prix weekend</label>
+                                        <input type="number" class="form-control" id="prixWeekend" 
+                                               th:field="*{prixWeekend}" step="0.01">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="bi bi-card-text me-2"></i>Description
+                                </h5>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" th:field="*{description}" 
+                                              rows="4"></textarea>
+                                </div>
+                            </div>
+                            
+                            <!-- Images -->
+                            <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="bi bi-images me-2"></i>Gestion des Images
+                                </h5>
+                                
+                                <!-- Images existantes -->
+                                <div th:if="${chambre.imageList != null and !chambre.imageList.isEmpty()}" class="mb-4">
+                                    <h6 class="mb-3">Images actuelles</h6>
+                                    <div class="row g-2">
+                                        <div class="col-md-3" th:each="imageUrl : ${chambre.imageList}">
+                                            <div class="card">
+                                                <img th:src="@{${imageUrl}}" class="card-img-top" style="height: 100px; object-fit: cover;" alt="Image de la chambre">
+                                                <div class="card-body p-2">
+                                                    <button type="button" class="btn btn-sm btn-danger w-100" 
+                                                            th:onclick="removeRoomImage([[${imageUrl}]])">
+                                                        <i class="bi bi-trash"></i> Suppr.
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Téléchargement de nouvelles images -->
+                                <div class="mb-3">
+                                    <label for="imageFiles" class="form-label">Ajouter de nouvelles images</label>
+                                    <input type="file" class="form-control" id="imageFiles" name="imageFiles" multiple
+                                        accept="image/*" onchange="previewRoomImages(this, 'room-preview-edit')">
+                                    <div class="form-text">
+                                        Formats supportés: JPG, PNG, GIF. Max 5MB par image.
+                                    </div>
+                                </div>
+                                
+                                <!-- Aperçu des nouvelles images -->
+                                <div id="room-preview-edit" class="row g-2 mt-2"></div>
+                            </div>
+
+                            <!-- Statut -->
+                            <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="bi bi-toggle-on me-2"></i>Statut
+                                </h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch" 
+                                                   id="disponible" th:field="*{disponible}">
+                                            <label class="form-check-label" for="disponible">Disponible</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="statutNettoyage" class="form-label">Nettoyage</label>
+                                        <select class="form-select" id="statutNettoyage" th:field="*{statutNettoyage}">
+                                            <option value="PROPRE">Propre</option>
+                                            <option value="A_NETTOYER">À nettoyer</option>
+                                            <option value="EN_COURS">En cours</option>
+                                            <option value="VERIFIE">Vérifié</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Boutons -->
+                            <div class="row mt-4">
+                                <div class="col-md-3">
+                                    <a th:href="@{/chambre/list/{hotelId}(hotelId=${chambre.hotel.id})}" 
+                                       class="btn btn-outline-secondary w-100">
+                                        <i class="bi bi-x-circle me-2"></i>Annuler
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="reset" class="btn btn-outline-warning w-100">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>Réinitialiser
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-save me-2"></i>Enregistrer
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="button" class="btn btn-success w-100" 
+                                            onclick="saveAndNew()">
+                                        <i class="bi bi-plus-circle me-2"></i>Enr. & Nouveau
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historique -->
+            <div class="col-lg-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history me-2"></i>Historique
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="reservation-timeline">
+                            <div class="timeline-item">
+                                <h6>Modification du prix</h6>
+                                <small class="text-muted">Aujourd'hui, 14:30</small>
+                                <p class="mb-0">De 450 MRU à 500 MRU</p>
+                            </div>
+                            <div class="timeline-item">
+                                <h6>Réservation confirmée</h6>
+                                <small class="text-muted">Hier, 10:15</small>
+                                <p class="mb-0">Client: Ahmed Benani</p>
+                            </div>
+                            <div class="timeline-item">
+                                <h6>Nettoyage terminé</h6>
+                                <small class="text-muted">27 Déc 2025</small>
+                                <p class="mb-0">Statut: Propre</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistiques -->
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up me-2"></i>Statistiques
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item d-flex justify-content-between">
+                                <span>Taux d'occupation</span>
+                                <span class="fw-bold">85%</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between">
+                                <span>Réservations ce mois</span>
+                                <span class="fw-bold">12</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between">
+                                <span>Revenus générés</span>
+                                <span class="fw-bold">5,400 MRU</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between">
+                                <span>Note moyenne</span>
+                                <span class="fw-bold">4.2/5</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div layout:fragment="scripts">
+        <script>
+            // Fonction pour prévisualiser les images de chambre
+            function previewRoomImages(input, previewId) {
+                const preview = document.getElementById(previewId);
+                preview.innerHTML = '';
+
+                if (input.files && input.files.length > 0) {
+                    for (let i = 0; i < input.files.length; i++) {
+                        const file = input.files[i];
+                        const reader = new FileReader();
+
+                        reader.onload = function (e) {
+                            const col = document.createElement('div');
+                            col.className = 'col-4 col-md-3';
+
+                            const card = document.createElement('div');
+                            card.className = 'card h-100';
+
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'card-img-top';
+                            img.style.height = '100px';
+                            img.style.objectFit = 'cover';
+
+                            const cardBody = document.createElement('div');
+                            cardBody.className = 'card-body p-2';
+
+                            const fileName = document.createElement('small');
+                            fileName.className = 'text-muted d-block text-truncate';
+                            fileName.textContent = file.name;
+
+                            const fileSize = document.createElement('small');
+                            fileSize.className = 'text-muted';
+                            fileSize.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+
+                            cardBody.appendChild(fileName);
+                            cardBody.appendChild(fileSize);
+
+                            card.appendChild(img);
+                            card.appendChild(cardBody);
+                            col.appendChild(card);
+                            preview.appendChild(col);
+                        };
+
+                        reader.readAsDataURL(file);
+                    }
+                }
+            }
+
+            function saveAndNew() {
+                document.getElementById('editForm').submit();
+                // Après soumission, rediriger vers la page d'ajout
+                setTimeout(() => {
+                    window.location.href = '/chambre/add/' + /*[[${chambre.hotel.id}]]*/ '';
+                }, 1000);
+            }
+            
+            // Fonction pour supprimer une image de chambre
+            function removeRoomImage(imageUrl) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette image ?')) {
+                    // Ajouter l'URL à supprimer dans un champ caché
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'imagesToRemove';
+                    hiddenInput.value = imageUrl;
+                    document.getElementById('editForm').appendChild(hiddenInput);
+                    
+                    // Submit form without confirmation to avoid conflicts
+                    document.getElementById('editForm').submit();
+                }
+            }
+            
+            document.getElementById('editForm').addEventListener('submit', function(e) {
+                // Remove the confirmation dialog to prevent conflicts with image removal
+            });
+        </script>
+    </div>
+</body>
+</html>

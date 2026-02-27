@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Nouvelle Réservation - RIMBestStay</title>
+    <style>
+        .summary-card {
+            border-left: 4px solid #0d6efd;
+            background: #f8f9fa;
+        }
+        .date-input-group {
+            position: relative;
+        }
+        .date-input-group i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+        .date-input-group input {
+            padding-left: 40px;
+        }
+        .price-breakdown {
+            border-radius: 10px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container py-4">
+            <!-- Étapes de réservation -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-center">
+                        <div class="text-center mx-4">
+                            <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" 
+                                 style="width: 40px; height: 40px;">
+                                1
+                            </div>
+                            <div class="mt-2">Chambre</div>
+                        </div>
+                        <div class="text-center mx-4">
+                            <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" 
+                                 style="width: 40px; height: 40px;">
+                                2
+                            </div>
+                            <div class="mt-2">Dates & Détails</div>
+                        </div>
+                        <div class="text-center mx-4">
+                            <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center" 
+                                 style="width: 40px; height: 40px;">
+                                3
+                            </div>
+                            <div class="mt-2">Confirmation</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Formulaire de réservation -->
+                <div class="col-lg-8 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-calendar-plus me-2"></i>Détails de la réservation
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/reservations/client/create}" method="post" th:object="${reservationRequest}">
+                                <input type="hidden" th:field="*{chambreId}" th:value="${chambreId}"/>
+                                
+                                <!-- Dates -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Date d'arrivée</label>
+                                        <div class="date-input-group">
+                                            <i class="bi bi-calendar-check text-primary"></i>
+                                            <input type="date" 
+                                                   th:field="*{dateArrivee}" 
+                                                   class="form-control" 
+                                                   th:min="${aujourdhui}"
+                                                   required>
+                                        </div>
+                                        <small class="text-muted">À partir de 14h00</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Date de départ</label>
+                                        <div class="date-input-group">
+                                            <i class="bi bi-calendar-x text-primary"></i>
+                                            <input type="date" 
+                                                   th:field="*{dateDepart}" 
+                                                   class="form-control"
+                                                   th:min="${demain}"
+                                                   required>
+                                        </div>
+                                        <small class="text-muted">Avant 12h00</small>
+                                    </div>
+                                </div>
+
+                                <!-- Nombre de personnes -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Nombre de personnes</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-people"></i>
+                                            </span>
+                                            <input type="number" 
+                                                   th:field="*{nombrePersonnes}" 
+                                                   class="form-control" 
+                                                   min="1" 
+                                                   th:max="${chambre.capacite}"
+                                                   value="1">
+                                            <span class="input-group-text">Max: <span th:text="${chambre.capacite}"></span></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Notes spéciales -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Demandes spéciales</label>
+                                    <textarea th:field="*{notesSpeciales}" 
+                                              class="form-control" 
+                                              rows="3" 
+                                              placeholder="Demandes spécifiques, allergies, anniversaire..."></textarea>
+                                </div>
+
+                                <!-- Boutons -->
+                                <div class="d-flex justify-content-between">
+                                    <a th:href="@{/chambre/details/{id}(id=${chambreId})}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-left me-2"></i>Retour
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle me-2"></i>Continuer
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Récapitulatif -->
+                <div class="col-lg-4">
+                    <!-- Détails de la chambre -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="bi bi-door-closed me-2"></i>Votre chambre
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-grow-1">
+                                    <h6 th:text="${chambre.typeChambre}"></h6>
+                                    <small class="text-muted" th:text="'Chambre ' + ${chambre.numero}"></small>
+                                </div>
+                                <span class="badge bg-success">Disponible</span>
+                            </div>
+                            <div class="mb-2">
+                                <i class="bi bi-people text-secondary me-2"></i>
+                                <span th:text="${chambre.capacite} + ' personne(s)'"></span>
+                            </div>
+                            <div class="mb-2">
+                                <i class="bi bi-house text-secondary me-2"></i>
+                                <span th:text="${chambre.superficie} + ' m²'"></span>
+                            </div>
+                            <div class="mb-3">
+                                <i class="bi bi-tag text-secondary me-2"></i>
+                                <span class="fw-bold" th:text="${chambre.prixNuit} + ' MRU/nuit'"></span>
+                            </div>
+                            
+                            <!-- Hôtel -->
+                            <hr>
+                            <div>
+                                <h6 th:text="${hotel.nom}"></h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-geo-alt me-1"></i>
+                                    <span th:text="${hotel.ville} + ', ' + ${hotel.pays}"></span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estimation du prix -->
+                    <!-- <div class="card price-breakdown">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="bi bi-calculator me-2"></i>Estimation
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Prix par nuit</span>
+                                <span th:text="${chambre.prixNuit} + ' MRU'"></span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Nombre de nuits</span>
+                                <span id="nombreNuits">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Taxes et frais</span>
+                                <span id="taxes">0 MRU</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold fs-5">
+                                <span>Total estimé</span>
+                                <span id="totalEstime">0 MRU</span>
+                            </div>
+                            <small class="text-muted d-block mt-2">
+                                * Estimation basée sur les dates sélectionnées
+                            </small>
+                        </div>
+                    </div> -->
+
+                    <!-- Informations importantes -->
+                    <div class="card mt-4 border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="mb-0">
+                                <i class="bi bi-info-circle me-2"></i>Informations importantes
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled small">
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                    Annulation gratuite 24h avant
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                    Petit-déjeuner inclus
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                    WiFi gratuit
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-clock text-primary me-2"></i>
+                                    Check-in: 14h00 | Check-out: 12h00
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div layout:fragment="scripts">
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const prixNuit = /*[[${chambre.prixNuit}]]*/ 0;
+                const taxeSejour = /*[[${chambre.taxeSejour ?: 20}]]*/ 20;
+                
+                function calculerTotal() {
+                    const dateArrivee = document.querySelector('[name="dateArrivee"]').value;
+                    const dateDepart = document.querySelector('[name="dateDepart"]').value;
+                    const nombrePersonnes = document.querySelector('[name="nombrePersonnes"]').value || 1;
+                    
+                    if (dateArrivee && dateDepart) {
+                        const arrivee = new Date(dateArrivee);
+                        const depart = new Date(dateDepart);
+                        
+                        // Calculer le nombre de nuits
+                        const diffTime = Math.abs(depart - arrivee);
+                        const nombreNuits = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        // Calculer le prix total
+                        let totalNuits = prixNuit * nombreNuits;
+                        
+                        // Ajouter taxe de séjour
+                        const totalTaxes = taxeSejour * nombrePersonnes * nombreNuits;
+                        
+                        // Calculer le total
+                        const total = totalNuits + totalTaxes;
+                        
+                        // Mettre à jour l'affichage
+                        document.getElementById('nombreNuits').textContent = nombreNuits;
+                        document.getElementById('taxes').textContent = totalTaxes + ' MRU';
+                        document.getElementById('totalEstime').textContent = total + ' MRU';
+                    }
+                }
+                
+                // Écouter les changements de date
+                document.querySelector('[name="dateArrivee"]').addEventListener('change', calculerTotal);
+                document.querySelector('[name="dateDepart"]').addEventListener('change', calculerTotal);
+                document.querySelector('[name="nombrePersonnes"]').addEventListener('input', calculerTotal);
+                
+                // Calculer initialement
+                calculerTotal();
+            });
+        </script>
+    </div>
+</body>
+</html>

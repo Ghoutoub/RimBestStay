@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Recherche avec Dates</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body { background: #f8f9fa; padding: 20px; }
+        .search-summary { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .hotel-card { margin-bottom: 20px; border: none; box-shadow: 0 2px 15px rgba(0,0,0,0.1); border-radius: 10px; }
+        .hotel-card:hover { transform: translateY(-5px); transition: transform 0.3s; }
+        .price-badge { font-size: 1.5rem; font-weight: bold; color: #198754; }
+        .stars { color: #ffc107; }
+        .available-badge { background: #198754; }
+        .capacity-badge { background: #6f42c1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- En-tête -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-search"></i> Test Recherche avec Dates</h1>
+            <a href="/search" class="btn btn-primary">
+                <i class="bi bi-arrow-left"></i> Recherche Principale
+            </a>
+        </div>
+        
+        <!-- Résumé de la recherche -->
+        <div class="search-summary">
+            <h4>📋 Critères de recherche</h4>
+            <div class="row mt-3">
+                <div class="col-md-3">
+                    <strong>Destination:</strong><br>
+                    <span th:text="${ville} ?: 'Toutes destinations'" class="text-primary"></span>
+                </div>
+                <div class="col-md-3" th:if="${dateArrivee}">
+                    <strong>Arrivée:</strong><br>
+                    <span th:text="${dateArrivee}" class="text-success"></span>
+                </div>
+                <div class="col-md-3" th:if="${dateDepart}">
+                    <strong>Départ:</strong><br>
+                    <span th:text="${dateDepart}" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Voyageurs:</strong><br>
+                    <span th:text="${adultes} + ' adulte(s)'"></span>
+                    <span th:if="${enfants > 0}" th:text="', ' + ${enfants} + ' enfant(s)'"></span>
+                </div>
+            </div>
+            <div class="mt-2" th:if="${nombreNuits}">
+                <span class="badge bg-info">
+                    <i class="bi bi-moon-stars"></i> <span th:text="${nombreNuits}"></span> nuit(s)
+                </span>
+            </div>
+        </div>
+        
+        <!-- Résultats -->
+        <div class="alert alert-info">
+            <h5><i class="bi bi-building"></i> <span th:text="${totalHotels}"></span> hôtel(s) disponible(s)</h5>
+        </div>
+        
+        <div th:if="${hotels != null and !hotels.empty}">
+            <div class="row">
+                <div th:each="hotel : ${hotels}" class="col-md-6">
+                    <div class="card hotel-card">
+                        <div class="card-body">
+                            <!-- En-tête hôtel -->
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="card-title mb-1" th:text="${hotel.nom}"></h5>
+                                    <p class="card-text text-muted mb-1">
+                                        <i class="bi bi-geo-alt"></i>
+                                        <span th:text="${hotel.ville}"></span>, 
+                                        <span th:text="${hotel.pays}"></span>
+                                    </p>
+                                    <div class="mb-2">
+                                        <span class="stars">
+                                            <span th:each="i : ${#numbers.sequence(1, hotel.etoiles)}">
+                                                <i class="bi bi-star-fill"></i>
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="badge available-badge">
+                                        <i class="bi bi-check-circle"></i> Disponible
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Description -->
+                            <p class="card-text" 
+                               th:if="${hotel.description}" 
+                               th:text="${#strings.substring(hotel.description, 0, 150)} + '...'">
+                            </p>
+                            
+                            <!-- Chambres disponibles -->
+                            <div class="mt-3">
+                                <h6>Chambres disponibles:</h6>
+                                <div th:if="${hotel.chambres != null and !hotel.chambres.empty}">
+                                    <div th:each="chambre : ${hotel.chambres}" 
+                                         th:if="${chambre.disponible}">
+                                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                                            <div>
+                                                <strong th:text="'Chambre ' + ${chambre.numero}"></strong>
+                                                <br>
+                                                <small class="text-muted" th:text="${chambre.typeChambre}"></small>
+                                                <span class="badge capacity-badge ms-2">
+                                                    <i class="bi bi-people"></i> 
+                                                    <span th:text="${chambre.capacite}"></span> pers.
+                                                </span>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="price-badge" 
+                                                     th:text="${#numbers.formatDecimal(chambre.prixNuit, 0, 'COMMA', 2, 'POINT')} + '€'">
+                                                </div>
+                                                <small class="text-muted">/nuit</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div th:if="${hotel.chambres == null or hotel.chambres.empty}">
+                                    <p class="text-muted">Aucune information sur les chambres</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Prix minimum -->
+                            <div class="mt-3 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">À partir de</small>
+                                    <div class="h4 text-success fw-bold">
+                                        <span th:text="${#numbers.formatDecimal(hotel.prixMinimum != null ? hotel.prixMinimum : 0, 0, 'COMMA', 2, 'POINT')}"></span>€
+                                        <small class="text-muted fs-6">/nuit</small>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary">
+                                    <i class="bi bi-calendar-check"></i> Réserver
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Aucun résultat -->
+        <div th:if="${hotels == null or hotels.empty}" class="text-center py-5">
+            <div class="mb-4">
+                <i class="bi bi-search display-1 text-muted"></i>
+            </div>
+            <h3 class="mb-3">Aucun hôtel trouvé</h3>
+            <p class="text-muted mb-4">
+                Aucun hôtel ne correspond à vos critères de recherche.
+            </p>
+        </div>
+        
+        <!-- Tests rapides -->
+        <div class="mt-5">
+            <h4><i class="bi bi-lightning-charge"></i> Tests rapides avec dates</h4>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <!-- Test Marrakech week-end prochain -->
+                <a th:href="@{/test/search-with-dates(
+                    ville='Marrakech',
+                    dateArrivee=${#dates.format(#dates.createNext(#dates.createNow()), 'yyyy-MM-dd')},
+                    dateDepart=${#dates.format(#dates.createNext(#dates.createNow()).plusDays(2), 'yyyy-MM-dd')},
+                    adultes=2,
+                    enfants=0)}" 
+                   class="btn btn-outline-success">
+                    <i class="bi bi-calendar-event"></i> Marrakech (week-end)
+                </a>
+                
+                <!-- Test Casablanca semaine prochaine -->
+                <a th:href="@{/test/search-with-dates(
+                    ville='Casablanca',
+                    dateArrivee=${#dates.format(#dates.createNow().plusDays(7), 'yyyy-MM-dd')},
+                    dateDepart=${#dates.format(#dates.createNow().plusDays(10), 'yyyy-MM-dd')},
+                    adultes=2,
+                    enfants=1)}" 
+                   class="btn btn-outline-primary">
+                    <i class="bi bi-calendar-week"></i> Casablanca (semaine)
+                </a>
+                
+                <!-- Test Rabat vacances -->
+                <a th:href="@{/test/search-with-dates(
+                    ville='Rabat',
+                    dateArrivee='2026-06-01',
+                    dateDepart='2026-06-07',
+                    adultes=4,
+                    enfants=2)}" 
+                   class="btn btn-outline-warning">
+                    <i class="bi bi-sun"></i> Rabat (vacances)
+                </a>
+                
+                <!-- Test sans dates -->
+                <a href="/test/search-with-dates?ville=Marrakech" 
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-calendar-x"></i> Marrakech (sans dates)
+                </a>
+            </div>
+        </div>
+        
+        <!-- Formulaire de test manuel -->
+        <div class="mt-5 card">
+            <div class="card-header">
+                <h5><i class="bi bi-sliders"></i> Test personnalisé</h5>
+            </div>
+            <div class="card-body">
+                <form action="/test/search-with-dates" method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Destination</label>
+                        <input type="text" class="form-control" name="ville" 
+                               placeholder="Marrakech, Casablanca, Rabat...">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Date d'arrivée</label>
+                        <input type="date" class="form-control" name="dateArrivee" 
+                               th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Date de départ</label>
+                        <input type="date" class="form-control" name="dateDepart" 
+                               th:value="${#dates.format(#dates.createNow().plusDays(2), 'yyyy-MM-dd')}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Adultes</label>
+                        <select class="form-select" name="adultes">
+                            <option value="1">1 adulte</option>
+                            <option value="2" selected>2 adultes</option>
+                            <option value="3">3 adultes</option>
+                            <option value="4">4 adultes</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Enfants</label>
+                        <select class="form-select" name="enfants">
+                            <option value="0" selected>0 enfant</option>
+                            <option value="1">1 enfant</option>
+                            <option value="2">2 enfants</option>
+                            <option value="3">3 enfants</option>
+                        </select>
+                    </div>
+                    <div class="col-12 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Tester la recherche
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Retour -->
+        <div class="mt-4 text-center">
+            <a href="/test/search" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-return-left"></i> Retour aux tests simples
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        // Script pour les dates
+        document.addEventListener('DOMContentLoaded', function() {
+            // Définir les dates min (aujourd'hui et demain)
+            const today = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+            
+            const arrivalInput = document.querySelector('input[name="dateArrivee"]');
+            const departureInput = document.querySelector('input[name="dateDepart"]');
+            
+            // Si pas de valeur, mettre aujourd'hui et demain
+            if (arrivalInput && !arrivalInput.value) {
+                arrivalInput.value = today;
+                arrivalInput.min = today;
+            }
+            
+            if (departureInput && !departureInput.value) {
+                departureInput.value = tomorrow;
+                departureInput.min = tomorrow;
+            }
+            
+            // Validation des dates
+            if (arrivalInput && departureInput) {
+                arrivalInput.addEventListener('change', function() {
+                    const arrivalDate = new Date(this.value);
+                    const nextDay = new Date(arrivalDate.getTime() + 86400000);
+                    departureInput.min = nextDay.toISOString().split('T')[0];
+                    
+                    if (new Date(departureInput.value) < nextDay) {
+                        departureInput.value = nextDay.toISOString().split('T')[0];
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

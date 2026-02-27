@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Gestion des Chambres - RIMBestStay</title>
+    <style>
+        .room-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .room-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #0d6efd;
+        }
+        .room-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .status-available {
+            background-color: #28a745;
+        }
+        .status-occupied {
+            background-color: #dc3545;
+        }
+        .status-maintenance {
+            background-color: #ffc107;
+        }
+        .capacity-badge {
+            font-size: 0.75rem;
+        }
+        .price-tag {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .amenity-icon {
+            font-size: 1.2rem;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <!-- En-tête -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-6">
+                    <i class="bi bi-door-closed text-primary me-2"></i>Gestion des Chambres
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/dashboard}">Tableau de bord</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/hotel/list}">Hôtels</a></li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/hotel/details/{id}(id=${hotel.id})}" th:text="${hotel.nom}"></a>
+                        </li>
+                        <li class="breadcrumb-item active">Chambres</li>
+                    </ol>
+                </nav>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-building me-1"></i>
+                    <span th:text="${hotel.nom}"></span>
+                    <span class="badge bg-primary ms-2" th:text="${hotel.etoiles} + '★'"></span>
+                </p>
+            </div>
+            <div>
+                <a th:href="@{/hotel/details/{id}(id=${hotel.id})}" class="btn btn-outline-secondary me-2">
+                    <i class="bi bi-arrow-left me-2"></i>Retour à l'hôtel
+                </a>
+            </div>
+            <div sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/chambre/add/{hotelId}(hotelId=${hotel.id})}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Ajouter une Chambre
+                </a>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card border-primary border-2">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-primary">Total Chambres</h6>
+                                <h2 class="text-primary mb-0" th:text="${totalChambres}">0</h2>
+                            </div>
+                            <i class="bi bi-door-closed display-6 text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-success border-2">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-success">Disponibles</h6>
+                                <h2 class="text-success mb-0" th:text="${availableChambres}">0</h2>
+                            </div>
+                            <i class="bi bi-check-circle display-6 text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-warning border-2">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-warning">Occupées</h6>
+                                <h2 class="text-warning mb-0" th:text="${occupiedChambres}">0</h2>
+                            </div>
+                            <i class="bi bi-x-circle display-6 text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-info border-2">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-info">Taux d'occupation</h6>
+                                <h2 class="text-info mb-0" th:text="${occupancyRate} + '%'">0%</h2>
+                            </div>
+                            <i class="bi bi-graph-up display-6 text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barre de recherche et filtres -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form th:action="@{/chambre/list/{hotelId}(hotelId=${hotel.id})}" method="get">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="search" class="form-label">Recherche</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   placeholder="Numéro, type..." th:value="${search}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="typeChambre" class="form-label">Type</label>
+                            <select class="form-select" id="typeChambre" name="typeChambre">
+                                <option value="">Tous</option>
+                                <option value="SIMPLE">Simple</option>
+                                <option value="DOUBLE">Double</option>
+                                <option value="SUITE">Suite</option>
+                                <option value="DELUXE">Deluxe</option>
+                                <option value="FAMILIALE">Familiale</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="minPrice" class="form-label">Prix min</label>
+                            <input type="number" class="form-control" id="minPrice" name="minPrice" 
+                                   placeholder="0" min="0" th:value="${minPrice}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="maxPrice" class="form-label">Prix max</label>
+                            <input type="number" class="form-control" id="maxPrice" name="maxPrice" 
+                                   placeholder="5000" min="0" th:value="${maxPrice}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="disponible" class="form-label">Disponibilité</label>
+                            <select class="form-select" id="disponible" name="disponible">
+                                <option value="">Toutes</option>
+                                <option value="true">Disponibles</option>
+                                <option value="false">Occupées</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-filter"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Boutons d'actions rapides -->
+        <!-- <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-outline-primary" onclick="filterByType('SIMPLE')">
+                        <i class="bi bi-1-square me-2"></i>Simples
+                    </button>
+                    <button class="btn btn-outline-success" onclick="filterByType('DOUBLE')">
+                        <i class="bi bi-2-square me-2"></i>Doubles
+                    </button>
+                    <button class="btn btn-outline-warning" onclick="filterByType('SUITE')">
+                        <i class="bi bi-stars me-2"></i>Suites
+                    </button>
+                    <button class="btn btn-outline-info" onclick="filterByType('FAMILIALE')">
+                        <i class="bi bi-people me-2"></i>Familiales
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="exportToExcel()">
+                        <i class="bi bi-file-earmark-excel me-2"></i>Exporter
+                    </button>
+                    <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#bulkUpdateModal">
+                        <i class="bi bi-gear me-2"></i>Mise à jour multiple
+                    </button>
+                </div>
+            </div>
+        </div> -->
+
+        <!-- Deux modes d'affichage -->
+        <ul class="nav nav-tabs mb-4" id="displayModeTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="grid-tab" data-bs-toggle="tab" data-bs-target="#grid-view" type="button">
+                    <i class="bi bi-grid-3x3-gap me-2"></i>Vue Grille
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="table-tab" data-bs-toggle="tab" data-bs-target="#table-view" type="button">
+                    <i class="bi bi-table me-2"></i>Vue Tableau
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="displayModeTabContent">
+            <!-- Vue Grille -->
+            <div class="tab-pane fade show active" id="grid-view" role="tabpanel">
+                <div class="row g-4">
+                    <div th:each="chambre : ${chambres}" class="col-xl-4 col-lg-6 col-md-6">
+                        <div class="card room-card h-100">
+                            <div class="card-header bg-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0" th:text="${chambre.typeChambre}">Type</h6>
+                                        <small class="text-muted" th:text="'Chambre ' + ${chambre.numero}"></small>
+                                    </div>
+                                    <div>
+                                        <span th:if="${chambre.disponible}" class="room-status status-available" 
+                                              title="Disponible"></span>
+                                        <span th:unless="${chambre.disponible}" class="room-status status-occupied" 
+                                              title="Occupée"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="price-tag text-primary" 
+                                              th:text="${chambre.prixNuit} + ' MRU/nuit'">
+                                            0 MRU/nuit
+                                        </span>
+                                        <span class="capacity-badge bg-info text-white" 
+                                              th:text="${chambre.capacite} + ' pers.'">
+                                            0 pers.
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <small class="text-muted" th:text="${chambre.description} ?: 'Aucune description'"></small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6 class="text-muted">Équipements:</h6>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <span class="badge bg-light text-dark border">
+                                                <i class="bi bi-wifi amenity-icon"></i>WiFi
+                                            </span>
+                                            <span class="badge bg-light text-dark border">
+                                                <i class="bi bi-tv amenity-icon"></i>TV
+                                            </span>
+                                            <span class="badge bg-light text-dark border">
+                                                <i class="bi bi-thermometer-snow amenity-icon"></i>AC
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between text-muted small">
+                                        <div>
+                                            <i class="bi bi-rulers me-1"></i>
+                                            <span>25m²</span>
+                                        </div>
+                                        <div>
+                                            <i class="bi bi-window me-1"></i>
+                                            <span>Vue ville</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <div class="d-flex justify-content-between">
+                                    <a th:href="@{/chambre/details/{id}(id=${chambre.id})}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a sec:authorize="hasRole('ADMIN')" th:href="@{/chambre/edit/{id}(id=${chambre.id})}" 
+                                       class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <!-- <button class="btn btn-sm btn-outline-danger" 
+                                            th:onclick="'confirmDelete(' + ${chambre.id} + ')'">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <a th:href="@{/reservation/new?chambreId={id}(id=${chambre.id})}" 
+                                       class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-calendar-plus"></i>
+                                    </a> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Carte "Ajouter une chambre" -->
+                    <div class="col-xl-4 col-lg-6 col-md-6"  sec:authorize ="hasRole('ADMIN')">
+                        <div class="card border-dashed h-100">
+                            <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                                <div class="display-1 text-muted opacity-25 mb-3">
+                                    <i class="bi bi-plus-circle"></i>
+                                </div>
+                              
+                                <h5 class="text-muted mb-3">Ajouter une nouvelle chambre</h5>
+                                <p class="text-muted mb-4">Créez une nouvelle chambre pour cet hôtel</p>
+                                <a th:href="@{/chambre/add/{hotelId}(hotelId=${hotel.id})}" 
+                                   class="btn btn-primary btn-lg">
+                                    <i class="bi bi-plus-circle me-2"></i>Ajouter
+                                </a>
+                              
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Aucune chambre -->
+                    <div th:if="${chambres.isEmpty()}" class="col-12 text-center py-5">
+                        <div  class="text-muted">
+                            <i class="bi bi-door-closed display-1 opacity-25"></i>
+                            <h4 class="mt-4">Aucune chambre trouvée</h4>
+                            <!-- <p class="mb-4">Commencez par ajouter votre première chambre à cet hôtel</p>
+                            <a th:href="@{/chambre/add/{hotelId}(hotelId=${hotel.id})}" 
+                               class="btn btn-primary btn-lg">
+                                <i class="bi bi-plus-circle me-2"></i>Ajouter une Chambre
+                            </a> -->
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vue Tableau -->
+            <div class="tab-pane fade" id="table-view" role="tabpanel">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="5%">
+                                            <input type="checkbox" id="selectAll" onclick="toggleSelectAll()">
+                                        </th>
+                                        <th width="10%">Numéro</th>
+                                        <th width="15%">Type</th>
+                                        <th width="10%">Capacité</th>
+                                        <th width="15%">Prix/nuit</th>
+                                        <th width="15%">Statut</th>
+                                        <th width="20%">Équipements</th>
+                                        <th width="10%">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="chambre : ${chambres}" 
+                                        th:class="${chambre.disponible ? '' : 'table-warning'}">
+                                        <td>
+                                            <input type="checkbox" th:id="'chambre_' + ${chambre.id}" 
+                                                   class="chambre-checkbox" th:value="${chambre.id}">
+                                        </td>
+                                        <td>
+                                            <strong th:text="${chambre.numero}">101</strong>
+                                        </td>
+                                        <td>
+                                            <span th:text="${chambre.typeChambre}"></span>
+                                            <br>
+                                            <small class="text-muted" th:text="'ID: ' + ${chambre.id}"></small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info" th:text="${chambre.capacite}"></span>
+                                            <small class="text-muted d-block">personne(s)</small>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold" th:text="${chambre.prixNuit} + ' MAD'"></span>
+                                            <br>
+                                            <small class="text-success">+ TVA 20%</small>
+                                        </td>
+                                        <td>
+                                            <span th:if="${chambre.disponible}" 
+                                                  class="badge bg-success">Disponible</span>
+                                            <span th:unless="${chambre.disponible}" 
+                                                  class="badge bg-danger">Occupée</span>
+                                            <br>
+                                            <small class="text-muted" th:text="'Dernière mise à jour: Aujourd\'hui'"></small>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <span class="badge bg-light text-dark border">
+                                                    <i class="bi bi-wifi"></i>
+                                                </span>
+                                                <span class="badge bg-light text-dark border">
+                                                    <i class="bi bi-tv"></i>
+                                                </span>
+                                                <span class="badge bg-light text-dark border">
+                                                    <i class="bi bi-thermometer-snow"></i>
+                                                </span>
+                                                <span class="badge bg-light text-dark border">
+                                                    <i class="bi bi-droplet"></i>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                          <div sec:authorize="hasRole('ADMIN')" >
+                                            <div class="btn-group btn-group-sm">
+                                                <a th:href="@{/chambre/details/{id}(id=${chambre.id})}" 
+                                                   class="btn btn-outline-primary" title="Voir">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a th:href="@{/chambre/edit/{id}(id=${chambre.id})}" 
+                                                   class="btn btn-outline-warning" title="Modifier">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a th:href="@{/chambre/duplicate/{id}(id=${chambre.id})}" 
+                                                   class="btn btn-outline-secondary" title="Dupliquer">
+                                                    <i class="bi bi-files"></i>
+                                                </a>
+                                            </div>
+                                          </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <nav th:if="${totalPages > 1}" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/chambre/list/{hotelId}(hotelId=${hotel.id}, page=${currentPage - 1})}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                <li th:each="page : ${#numbers.sequence(0, totalPages - 1)}" 
+                    class="page-item" th:classappend="${page == currentPage} ? 'active'">
+                    <a class="page-link" th:href="@{/chambre/list/{hotelId}(hotelId=${hotel.id}, page=${page})}"
+                       th:text="${page + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                    <a class="page-link" th:href="@{/chambre/list/{hotelId}(hotelId=${hotel.id}, page=${currentPage + 1})}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Modals -->
+    <!-- Modal de mise à jour multiple -->
+    <div class="modal fade" id="bulkUpdateModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Mise à jour multiple</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="bulkUpdateForm">
+                        <div class="mb-3">
+                            <label class="form-label">Chambres sélectionnées: <span id="selectedCount">0</span></label>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Modifier le statut</label>
+                            <select class="form-select" name="status">
+                                <option value="">Ne pas modifier</option>
+                                <option value="AVAILABLE">Disponible</option>
+                                <option value="OCCUPIED">Occupée</option>
+                                <option value="MAINTENANCE">Maintenance</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Modifier le prix (en %)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" name="priceChange" 
+                                       placeholder="Ex: 10 pour +10%">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="applyBulkUpdate()">Appliquer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div layout:fragment="scripts">
+        <script>
+            // Gestion de la sélection multiple
+            function toggleSelectAll() {
+                const selectAll = document.getElementById('selectAll');
+                const checkboxes = document.querySelectorAll('.chambre-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = selectAll.checked;
+                });
+                updateSelectedCount();
+            }
+
+            function updateSelectedCount() {
+                const selected = document.querySelectorAll('.chambre-checkbox:checked');
+                document.getElementById('selectedCount').textContent = selected.length;
+            }
+
+            document.querySelectorAll('.chambre-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelectedCount);
+            });
+
+            // Filtres rapides
+            function filterByType(type) {
+                document.getElementById('typeChambre').value = type;
+                document.forms[0].submit();
+            }
+
+            // Export Excel (simulé)
+            function exportToExcel() {
+                alert('Exportation Excel démarrée...');
+                // Ici, vous implémenteriez une requête AJAX pour générer l'export
+            }
+
+            // Mise à jour multiple
+            function applyBulkUpdate() {
+                const selectedIds = Array.from(document.querySelectorAll('.chambre-checkbox:checked'))
+                    .map(cb => cb.value);
+                
+                if (selectedIds.length === 0) {
+                    alert('Veuillez sélectionner au moins une chambre');
+                    return;
+                }
+
+                const formData = new FormData(document.getElementById('bulkUpdateForm'));
+                formData.append('chambreIds', selectedIds.join(','));
+
+                fetch('/chambre/bulk-update', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').getAttribute('content')
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+
+            // Confirmation de suppression
+            function confirmDelete(chambreId) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette chambre ?')) {
+                    fetch('/chambre/delete/' + chambreId, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            alert('Erreur lors de la suppression');
+                        }
+                    });
+                }
+            }
+
+            // Initialiser les tooltips Bootstrap
+            document.addEventListener('DOMContentLoaded', function() {
+                const tooltips = document.querySelectorAll('[title]');
+                tooltips.forEach(element => {
+                    new bootstrap.Tooltip(element);
+                });
+            });
+        </script>
+    </div>
+</body>
+</html>

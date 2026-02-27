@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Résultats</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; background: #f8f9fa; }
+        .hotel-card { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">🧪 Test de Recherche</h1>
+        
+        <div class="alert alert-info">
+            <h4>Résultats pour: <strong th:text="${ville} ?: 'Toutes les villes'"></strong></h4>
+            <p th:text="${totalHotels} + ' hôtel(s) trouvé(s)'"></p>
+        </div>
+        
+        <div th:if="${hotels != null and !hotels.empty}">
+            <div class="row">
+                <div th:each="hotel : ${hotels}" class="col-md-6">
+                    <div class="card hotel-card">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${hotel.nom}"></h5>
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                <span th:text="${hotel.ville}"></span>, 
+                                <span th:text="${hotel.pays}"></span>
+                                <span th:if="${hotel.etoiles != null}">
+                                    - <span class="text-warning">
+                                        <span th:each="i : ${#numbers.sequence(1, hotel.etoiles)}">★</span>
+                                    </span>
+                                </span>
+                            </h6>
+                            <p class="card-text" th:text="${hotel.description}"></p>
+                            <div class="mt-3">
+                                <span class="badge bg-primary">ID: <span th:text="${hotel.id}"></span></span>
+                                <span th:if="${hotel.actif}" class="badge bg-success">Actif</span>
+                                <span th:unless="${hotel.actif}" class="badge bg-secondary">Inactif</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div th:if="${hotels == null or hotels.empty}" class="alert alert-warning">
+            Aucun hôtel trouvé
+        </div>
+        
+        <div class="mt-4">
+            <h4>Tests rapides:</h4>
+            <div class="d-flex gap-2">
+                <a href="/test/search?ville=Marrakech" class="btn btn-outline-primary">Test Marrakech</a>
+                <a href="/test/search?ville=Casablanca" class="btn btn-outline-primary">Test Casablanca</a>
+                <a href="/test/search?ville=Rabat" class="btn btn-outline-primary">Test Rabat</a>
+                <a href="/test/search" class="btn btn-outline-secondary">Tous les hôtels</a>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <a href="/search" class="btn btn-primary">Retour à la recherche principale</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Créer un Utilisateur - RIMBestStay</title>
+    <style>
+        .required-field::after {
+            content: " *";
+            color: red;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .role-selection .form-check {
+            margin-bottom: 10px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .role-selection .form-check:hover {
+            background-color: #f8f9fa;
+            border-color: #dc3545;
+        }
+        
+        .role-selection .form-check-input:checked + .form-check-label {
+            font-weight: bold;
+            color: #dc3545;
+        }
+        
+        .field-specific {
+            display: none;
+        }
+        
+        .field-specific.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid mt-4">
+        
+        <!-- En-tête -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <nav aria-label="breadcrumb" class="mb-2">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Tableau de bord</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/admin/users}">Utilisateurs</a></li>
+                        <li class="breadcrumb-item active">Créer un utilisateur</li>
+                    </ol>
+                </nav>
+                <h1 class="display-6 text-danger fw-bold">
+                    <i class="bi bi-person-plus me-2"></i>Créer un Nouvel Utilisateur
+                </h1>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-info-circle me-1"></i>Ajoutez un nouvel utilisateur à la plateforme
+                </p>
+            </div>
+            <div>
+                <a th:href="@{/admin/users}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Retour à la liste
+                </a>
+            </div>
+        </div>
+
+        <!-- Alertes -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Formulaire de création -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person-add me-2"></i>Formulaire de création</h5>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/users/create}" th:object="${userDTO}" method="post" id="createUserForm">
+                    
+                    <!-- Section 1: Informations de base -->
+                    <div class="form-section">
+                        <h5 class="mb-3"><i class="bi bi-person me-2"></i>Informations de base</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nom" class="form-label required-field">Nom complet</label>
+                                    <input type="text" class="form-control" id="nom" th:field="*{nom}" required
+                                           placeholder="Ex: Jean Dupont">
+                                    <small class="form-text text-muted">Le nom complet de l'utilisateur</small>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('nom')}" 
+                                         th:errors="*{nom}"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label required-field">Email</label>
+                                    <input type="email" class="form-control" id="email" th:field="*{email}" required
+                                           placeholder="exemple@email.com">
+                                    <small class="form-text text-muted">L'adresse email de connexion</small>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" 
+                                         th:errors="*{email}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Rôle et mot de passe -->
+                    <div class="form-section">
+                        <h5 class="mb-3"><i class="bi bi-shield-check me-2"></i>Rôle et Sécurité</h5>
+                        
+                        <!-- Sélection du rôle -->
+                        <div class="mb-4">
+                            <label class="form-label required-field">Type d'utilisateur</label>
+                            <div class="role-selection">
+                                <div class="form-check" th:each="role : ${roles}">
+                                    <input class="form-check-input" type="radio" 
+                                           th:id="${'role_' + role.name()}"
+                                           th:value="${role.name()}" 
+                                           th:field="*{role}"
+                                           th:checked="${role.name() == 'ROLE_CLIENT'}">
+                                    <label class="form-check-label" th:for="${'role_' + role.name()}">
+                                        <span th:text="${role.name().replace('ROLE_', '')}"></span>
+                                        <small class="text-muted d-block" th:if="${role.name() == 'ROLE_CLIENT'}">
+                                            Utilisateur standard de la plateforme
+                                        </small>
+                                        <small class="text-muted d-block" th:if="${role.name() == 'ROLE_PARTENAIRE'}">
+                                            Hôtel, restaurant ou prestataire de services
+                                        </small>
+                                        <small class="text-muted d-block" th:if="${role.name() == 'ROLE_ADMIN'}">
+                                            Administrateur avec droits complets
+                                        </small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('role')}" 
+                                 th:errors="*{role}"></div>
+                        </div>
+
+                        <!-- Mot de passe -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="motDePasse" class="form-label required-field">Mot de passe</label>
+                                    <input type="password" class="form-control" id="motDePasse" 
+                                           th:field="*{motDePasse}" required
+                                           placeholder="Minimum 6 caractères">
+                                    <small class="form-text text-muted">Le mot de passe de connexion</small>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('motDePasse')}" 
+                                         th:errors="*{motDePasse}"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label required-field">Confirmer le mot de passe</label>
+                                    <input type="password" class="form-control" id="confirmPassword" 
+                                           th:field="*{confirmPassword}" required
+                                           placeholder="Répétez le mot de passe">
+                                    <small class="form-text text-muted">Identique au mot de passe ci-dessus</small>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('confirmPassword')}" 
+                                         th:errors="*{confirmPassword}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Champs spécifiques (dynamiques) -->
+                    <!-- Champs pour CLIENT -->
+                    <div class="form-section field-specific" id="clientFields">
+                        <h5 class="mb-3"><i class="bi bi-person me-2"></i>Informations Client</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="telephone" class="form-label">Téléphone</label>
+                                    <input type="text" class="form-control" id="telephone" 
+                                           th:field="*{telephone}"
+                                           placeholder="Ex: +212 612 345 678">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="adresse" class="form-label">Adresse</label>
+                                    <input type="text" class="form-control" id="adresse" 
+                                           th:field="*{adresse}"
+                                           placeholder="Ex: 123 Rue Principale, Casablanca">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Champs pour PARTENAIRE -->
+                    <div class="form-section field-specific" id="partenaireFields">
+                        <h5 class="mb-3"><i class="bi bi-building me-2"></i>Informations Partenaire</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nomEntreprise" class="form-label required-field">Nom de l'entreprise</label>
+                                    <input type="text" class="form-control" id="nomEntreprise" 
+                                           th:field="*{nomEntreprise}"
+                                           placeholder="Ex: Hotel Marrakech Palace">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('nomEntreprise')}" 
+                                         th:errors="*{nomEntreprise}"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="siret" class="form-label">SIRET</label>
+                                    <input type="text" class="form-control" id="siret" 
+                                           th:field="*{siret}"
+                                           placeholder="Ex: 123 456 789 00012">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Champs pour ADMIN -->
+                    <div class="form-section field-specific" id="adminFields">
+                        <h5 class="mb-3"><i class="bi bi-shield-check me-2"></i>Informations Administrateur</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="departement" class="form-label">Département</label>
+                                    <input type="text" class="form-control" id="departement" 
+                                           th:field="*{departement}"
+                                           placeholder="Ex: IT, Marketing, Support">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="d-flex justify-content-between mt-4 pt-4 border-top">
+                        <div>
+                            <button type="reset" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Réinitialiser
+                            </button>
+                        </div>
+                        <div>
+                            <a th:href="@{/admin/users}" class="btn btn-outline-danger me-2">
+                                <i class="bi bi-x-circle me-2"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>Créer l'utilisateur
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript pour gérer l'affichage dynamique des champs -->
+<script th:inline="javascript">
+/*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function() {
+        // Références aux éléments
+        const roleRadios = document.querySelectorAll('input[name="role"]');
+        const clientFields = document.getElementById('clientFields');
+        const partenaireFields = document.getElementById('partenaireFields');
+        const adminFields = document.getElementById('adminFields');
+        
+        // Fonction pour afficher les champs selon le rôle sélectionné
+        function showFieldsForRole(role) {
+            // Masquer tous les champs
+            [clientFields, partenaireFields, adminFields].forEach(field => {
+                field.classList.remove('active');
+            });
+            
+            // Afficher les champs correspondants
+            switch(role) {
+                case 'ROLE_CLIENT':
+                    clientFields.classList.add('active');
+                    break;
+                case 'ROLE_PARTENAIRE':
+                    partenaireFields.classList.add('active');
+                    break;
+                case 'ROLE_ADMIN':
+                    adminFields.classList.add('active');
+                    break;
+            }
+        }
+        
+        // Écouter les changements sur les boutons radio
+        roleRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                showFieldsForRole(this.value);
+            });
+        });
+        
+        // Initialiser avec le rôle par défaut (client)
+        const defaultRole = document.querySelector('input[name="role"]:checked');
+        if (defaultRole) {
+            showFieldsForRole(defaultRole.value);
+        }
+        
+        // Validation du formulaire
+        const form = document.getElementById('createUserForm');
+        form.addEventListener('submit', function(event) {
+            // Vérification que les mots de passe correspondent
+            const password = document.getElementById('motDePasse').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                event.preventDefault();
+                alert('Les mots de passe ne correspondent pas.');
+                return false;
+            }
+            
+            // Vérification de la longueur du mot de passe
+            if (password.length < 6) {
+                event.preventDefault();
+                alert('Le mot de passe doit contenir au moins 6 caractères.');
+                return false;
+            }
+            
+            // Si c'est un partenaire, vérifier le nom de l'entreprise
+            const selectedRole = document.querySelector('input[name="role"]:checked').value;
+            if (selectedRole === 'ROLE_PARTENAIRE') {
+                const nomEntreprise = document.getElementById('nomEntreprise').value;
+                if (!nomEntreprise || nomEntreprise.trim() === '') {
+                    event.preventDefault();
+                    alert('Le nom de l\'entreprise est requis pour un partenaire.');
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+        
+        // Afficher/masquer le mot de passe
+        const togglePassword = (inputId) => {
+            const input = document.getElementById(inputId);
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+        };
+        
+        // Ajouter des boutons pour voir les mots de passe (optionnel)
+        ['motDePasse', 'confirmPassword'].forEach(id => {
+            const input = document.getElementById(id);
+            const wrapper = document.createElement('div');
+            wrapper.className = 'input-group';
+            input.parentNode.insertBefore(wrapper, input);
+            wrapper.appendChild(input);
+            
+            const button = document.createElement('button');
+            button.className = 'btn btn-outline-secondary';
+            button.type = 'button';
+            button.innerHTML = '<i class="bi bi-eye"></i>';
+            button.onclick = () => togglePassword(id);
+            
+            const buttonWrapper = document.createElement('div');
+            buttonWrapper.className = 'input-group-append';
+            buttonWrapper.appendChild(button);
+            wrapper.appendChild(buttonWrapper);
+        });
+    });
+/*]]>*/
+</script>
+</body>
+</html>

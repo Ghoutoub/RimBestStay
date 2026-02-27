@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Détails Utilisateur - RIMBestStay</title>
+    <style>
+        .user-avatar-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 48px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin: 0 auto;
+        }
+        
+        .info-card {
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 1.1rem;
+            color: #333;
+        }
+        
+        .badge-large {
+            font-size: 1rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid mt-4">
+        
+        <!-- En-tête avec bouton retour -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <nav aria-label="breadcrumb" class="mb-2">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Tableau de bord</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/admin/users}">Utilisateurs</a></li>
+                        <li class="breadcrumb-item active">Détails</li>
+                    </ol>
+                </nav>
+                <h1 class="display-6 text-danger fw-bold">
+                    <i class="bi bi-person-badge me-2"></i>Détails de l'Utilisateur
+                </h1>
+            </div>
+            <div>
+                <a th:href="@{/admin/users}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Retour à la liste
+                </a>
+            </div>
+        </div>
+
+        <!-- Alertes -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row">
+            <!-- Colonne gauche : Informations générales -->
+            <div class="col-lg-4 col-md-5 mb-4">
+                <div class="card shadow">
+                    <div class="card-body text-center">
+                        <!-- Avatar -->
+                        <div class="user-avatar-large mb-4">
+                            <span th:text="${user.nom?.substring(0,1)?.toUpperCase() ?: '?'}">?</span>
+                        </div>
+                        
+                        <!-- Nom et email -->
+                        <h3 th:text="${user.nom}">Nom Utilisateur</h3>
+                        <p class="text-muted mb-4" th:text="${user.email}">email@example.com</p>
+                        
+                        <!-- Statut -->
+                        <div class="mb-4">
+                            <span th:if="${user.actif == true}" 
+                                  class="badge-large bg-success bg-opacity-10 text-success border border-success">
+                                <i class="bi bi-check-circle me-1"></i>ACTIF
+                            </span>
+                            <span th:if="${user.actif == false}" 
+                                  class="badge-large bg-danger bg-opacity-10 text-danger border border-danger">
+                                <i class="bi bi-x-circle me-1"></i>INACTIF
+                            </span>
+                        </div>
+                        
+                        <!-- Type d'utilisateur -->
+                        <div class="mb-4">
+                            <span th:if="${isAdmin}" class="badge bg-danger">Administrateur</span>
+                            <span th:if="${isPartenaire}" class="badge bg-warning">Partenaire</span>
+                            <span th:if="${isClient}" class="badge bg-primary">Client</span>
+                        </div>
+                        
+                        <!-- Actions rapides -->
+                        <div class="action-buttons">
+                            <a th:href="@{/admin/users/{id}/edit(id=${user.id})}" 
+                               class="btn btn-warning">
+                                <i class="bi bi-pencil me-2"></i>Éditer
+                            </a>
+                            
+                            <form th:action="@{/admin/users/{id}/toggle-status(id=${user.id})}" 
+                                  method="post" 
+                                  class="d-inline"
+                                  th:onclick="return confirm('Changer le statut de cet utilisateur ?')">
+                                <input type="hidden" name="activate" th:value="${user.actif != null ? !user.actif : true}">
+                                <button type="submit" 
+                                        class="btn"
+                                        th:class="${user.actif != null and user.actif} ? 'btn-danger' : 'btn-success'">
+                                    <i th:class="${user.actif != null and user.actif} ? 'bi bi-toggle-off me-2' : 'bi bi-toggle-on me-2'"></i>
+                                    <span th:text="${user.actif != null and user.actif} ? 'Désactiver' : 'Activer'"></span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Colonne droite : Détails -->
+            <div class="col-lg-8 col-md-7">
+                <!-- Informations de base -->
+                <div class="card shadow mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informations Générales</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="info-card">
+                                    <div class="info-label">ID</div>
+                                    <div class="info-value" th:text="${user.id}">-</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="info-card">
+                                    <div class="info-label">Date d'inscription</div>
+                                    <div class="info-value" th:if="${user.createdAt != null}"
+                                         th:text="${#dates.format(user.createdAt, 'dd/MM/yyyy à HH:mm')}">-</div>
+                                    <div class="info-value" th:unless="${user.createdAt != null}">Non disponible</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="info-card">
+                                    <div class="info-label">Rôles</div>
+                                    <div class="info-value">
+                                        <div th:if="${user.roles != null and not #lists.isEmpty(user.roles)}">
+                                            <span th:each="role : ${user.roles}" 
+                                                  class="badge me-1"
+                                                  th:class="${role.name == 'ROLE_ADMIN' ? 'bg-danger' :
+                                                             role.name == 'ROLE_PARTENAIRE' ? 'bg-warning' : 'bg-primary'}">
+                                                <span th:text="${#strings.replace(role.name, 'ROLE_', '')}"></span>
+                                            </span>
+                                        </div>
+                                        <div th:unless="${user.roles != null and not #lists.isEmpty(user.roles)}">
+                                            <span class="badge bg-secondary">Aucun rôle</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Informations spécifiques selon le type -->
+                <div th:if="${isClient}" class="card shadow mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-person me-2"></i>Informations Client</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="info-card">
+                                    <div class="info-label">Téléphone</div>
+                                    <div class="info-value" th:text="${user.telephone ?: 'Non renseigné'}">-</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="info-card">
+                                    <div class="info-label">Adresse</div>
+                                    <div class="info-value" th:text="${user.adresse ?: 'Non renseignée'}">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div th:if="${isPartenaire}" class="card shadow mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-building me-2"></i>Informations Partenaire</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="info-card">
+                                    <div class="info-label">Entreprise</div>
+                                    <div class="info-value" th:text="${user.nomEntreprise ?: 'Non renseigné'}">-</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="info-card">
+                                    <div class="info-label">SIRET</div>
+                                    <div class="info-value" th:text="${user.siret ?: 'Non renseigné'}">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div th:if="${isAdmin}" class="card shadow mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-shield-check me-2"></i>Informations Administrateur</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="info-card">
+                                    <div class="info-label">Département</div>
+                                    <div class="info-value" th:text="${user.departement ?: 'Non renseigné'}">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Actions dangereuses -->
+                <div class="card border-danger shadow">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Zone de danger</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-danger">Supprimer cet utilisateur</h6>
+                                <p class="text-muted mb-0">
+                                    Cette action est irréversible. Toutes les données associées seront perdues.
+                                </p>
+                            </div>
+                            <div>
+                                <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" 
+                                      method="post"
+                                      th:onclick="return confirm('Êtes-vous ABSOLUMENT sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.')">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="bi bi-trash me-2"></i>Supprimer définitivement
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title th:text="'Modifier ' + ${hotel.nom} + ' - RIMBestStay'">Modifier Hôtel</title>
+    <style>
+        .form-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .section-title {
+            border-bottom: 2px solid #fd7e14;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <!-- En-tête -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-6">
+                    <i class="bi bi-pencil-square text-warning me-2"></i>
+                    Modifier l'Hôtel: <span class="text-primary" th:text="${hotel.nom}"></span>
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/dashboard}">Tableau de bord</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/hotel/list}">Hôtels</a></li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/hotel/details/{id}(id=${hotel.id})}" th:text="${hotel.nom}"></a>
+                        </li>
+                        <li class="breadcrumb-item active">Modifier</li>
+                    </ol>
+                </nav>
+            </div>
+            <div>
+                <a th:href="@{/hotel/details/{id}(id=${hotel.id})}" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-eye me-2"></i>Voir
+                </a>
+                <a th:href="@{/hotel/list}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Retour
+                </a>
+            </div>
+        </div>
+
+        <!-- Formulaire de modification -->
+        <div class="card shadow">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-building me-2"></i>Modifier les Informations
+                </h5>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/hotel/edit/{id}(id=${hotel.id})}" th:object="${hotel}" method="post" enctype="multipart/form-data" id="editForm">
+                    <!-- Informations de base -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-info-circle me-2"></i>Informations de base
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label for="nom" class="form-label">Nom de l'hôtel</label>
+                                <input type="text" class="form-control" id="nom" th:field="*{nom}" required>
+                            </div>
+                            <div sec:authorize="hasRole('ADMIN')" class="col-md-4">
+                                <label class="form-label">Étoiles</label>
+                                <select class="form-select" th:field="*{etoiles}">
+                                    <option value="1">★</option>
+                                    <option value="2">★★</option>
+                                    <option value="3">★★★</option>
+                                    <option value="4">★★★★</option>
+                                    <option value="5">★★★★★</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Localisation -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-geo-alt me-2"></i>Localisation
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="pays" class="form-label">Pays</label>
+                                <input type="text" class="form-control" id="pays" th:field="*{pays}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="ville" class="form-label">Ville</label>
+                                <input type="text" class="form-control" id="ville" th:field="*{ville}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="adresse" class="form-label">Adresse</label>
+                                <input type="text" class="form-control" id="adresse" th:field="*{adresse}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-telephone me-2"></i>Contact
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="telephone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="telephone" th:field="*{telephone}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-card-text me-2"></i>Description
+                        </h5>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" th:field="*{description}" rows="4"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Images -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-images me-2"></i>Gestion des Images
+                        </h5>
+                        
+                        <!-- Images existantes -->
+                        <div th:if="${hotel.imageList != null and !hotel.imageList.isEmpty()}" class="mb-4">
+                            <h6 class="mb-3">Images actuelles</h6>
+                            <div class="row g-2">
+                                <div class="col-md-3" th:each="imageUrl : ${hotel.imageList}">
+                                    <div class="card">
+                                        <img th:src="@{${imageUrl}}" class="card-img-top" style="height: 100px; object-fit: cover;" alt="Image de l'hôtel">
+                                        <div class="card-body p-2">
+                                            <button type="button" class="btn btn-sm btn-danger w-100" 
+                                                    th:onclick="removeImage([[${imageUrl}]])">
+                                                <i class="bi bi-trash"></i> Suppr.
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Téléchargement de nouvelles images -->
+                        <div class="mb-3">
+                            <label for="imageFiles" class="form-label">Ajouter de nouvelles images</label>
+                            <input type="file" class="form-control" id="imageFiles" name="imageFiles" multiple
+                                accept="image/*" onchange="previewHotelImages(this, 'hotel-preview-edit')">
+                            <div class="form-text">
+                                Formats supportés: JPG, PNG, GIF. Max 5MB par image.
+                                Première image sera utilisée comme image principale.
+                            </div>
+                        </div>
+                        
+                        <!-- Aperçu des nouvelles images -->
+                        <div id="hotel-preview-edit" class="row g-2 mt-2"></div>
+                    </div>
+                    
+                    <!-- Statut -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-toggle-on me-2"></i>Statut
+                        </h5>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" 
+                                   id="actif" th:field="*{actif}">
+                            <label class="form-check-label" for="actif">
+                                Hôtel actif
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Boutons -->
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <a th:href="@{/hotel/list}" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-x-circle me-2"></i>Annuler
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="reset" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Réinitialiser
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-save me-2"></i>Enregistrer
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Statistiques de l'hôtel -->
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card bg-light border">
+                    <div class="card-body text-center">
+                        <i class="bi bi-door-closed display-5 text-primary"></i>
+                        <h5 class="mt-2" th:text="${#lists.size(hotel.chambres)}">0</h5>
+                        <small class="text-muted">Chambres</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-light border">
+                    <div class="card-body text-center">
+                        <i class="bi bi-calendar-check display-5 text-success"></i>
+                        <h5 class="mt-2">42</h5>
+                        <small class="text-muted">Réservations</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-light border">
+                    <div class="card-body text-center">
+                        <i class="bi bi-star display-5 text-warning"></i>
+                        <h5 class="mt-2">4.2</h5>
+                        <small class="text-muted">Note moyenne</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-light border">
+                    <div class="card-body text-center">
+                        <i class="bi bi-cash-coin display-5 text-info"></i>
+                        <h5 class="mt-2">85%</h5>
+                        <small class="text-muted">Taux d'occupation</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div layout:fragment="scripts">
+        <script>
+            // Fonction pour prévisualiser les images
+            function previewHotelImages(input, previewId) {
+                const preview = document.getElementById(previewId);
+                preview.innerHTML = '';
+
+                if (input.files && input.files.length > 0) {
+                    for (let i = 0; i < input.files.length; i++) {
+                        const file = input.files[i];
+                        const reader = new FileReader();
+
+                        reader.onload = function (e) {
+                            const col = document.createElement('div');
+                            col.className = 'col-4 col-md-3';
+
+                            const card = document.createElement('div');
+                            card.className = 'card h-100';
+
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'card-img-top';
+                            img.style.height = '100px';
+                            img.style.objectFit = 'cover';
+
+                            const cardBody = document.createElement('div');
+                            cardBody.className = 'card-body p-2';
+
+                            const fileName = document.createElement('small');
+                            fileName.className = 'text-muted d-block text-truncate';
+                            fileName.textContent = file.name;
+
+                            const fileSize = document.createElement('small');
+                            fileSize.className = 'text-muted';
+                            fileSize.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+
+                            cardBody.appendChild(fileName);
+                            cardBody.appendChild(fileSize);
+
+                            card.appendChild(img);
+                            card.appendChild(cardBody);
+                            col.appendChild(card);
+                            preview.appendChild(col);
+                        };
+
+                        reader.readAsDataURL(file);
+                    }
+                }
+            }
+
+            // Fonction pour supprimer une image
+            function removeImage(imageUrl) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette image ?')) {
+                    // Ajouter l'URL à supprimer dans un champ caché
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'imagesToRemove';
+                    hiddenInput.value = imageUrl;
+                    document.getElementById('editForm').appendChild(hiddenInput);
+                    
+                    // Submit form without confirmation to avoid conflicts
+                    document.getElementById('editForm').submit();
+                }
+            }
+            
+            // Validation pour l'édition (without confirmation on submit)
+            document.getElementById('editForm').addEventListener('submit', function(e) {
+                const email = document.getElementById('email').value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                if (!emailRegex.test(email)) {
+                    e.preventDefault();
+                    alert('Veuillez entrer un email valide');
+                    return;
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>

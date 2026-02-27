@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/base}">
+
+<head>
+    <title>Ajouter une Chambre - RIMBestStay</title>
+    <style>
+        .form-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .equipment-badge {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .equipment-badge.selected {
+            background-color: #0d6efd !important;
+            color: white !important;
+            border-color: #0d6efd !important;
+        }
+
+        .room-preview {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            background: white;
+        }
+
+        .price-input .input-group-text {
+            background-color: #e7f1ff;
+            color: #0d6efd;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <!-- En-tête -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-6">
+                    <i class="bi bi-plus-circle text-success me-2"></i>Ajouter une Chambre
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/dashboard}">Tableau de bord</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/hotel/list}">Hôtels</a></li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/hotel/details/{id}(id=${hotel.id})}" th:text="${hotel.nom}"></a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/chambre/list/{hotelId}(hotelId=${hotel.id})}">Chambres</a>
+                        </li>
+                        <li class="breadcrumb-item active">Nouvelle</li>
+                    </ol>
+                </nav>
+                <p class="text-muted">
+                    <i class="bi bi-building me-1"></i>
+                    <span th:text="${hotel.nom}"></span>
+                    <span class="badge bg-primary ms-2" th:text="${hotel.etoiles} + '★'"></span>
+                </p>
+            </div>
+            <a th:href="@{/chambre/list/{hotelId}(hotelId=${hotel.id})}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Retour
+            </a>
+
+        </div>
+
+        <div class="row">
+            <!-- Formulaire principal -->
+            <div class="col-lg-8">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <form th:action="@{/chambre/add}" th:object="${chambre}" method="post" enctype="multipart/form-data" id="chambreForm">
+                            <input type="hidden" name="hotelId" th:value="${hotel.id}" />
+
+                            <!-- Informations de base -->
+                            <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="bi bi-info-circle me-2"></i>Informations de base
+                                </h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="numero" class="form-label">
+                                            Numéro de chambre <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="numero" th:field="*{numero}"
+                                            placeholder="Ex: 101, 202, A301" required>
+                                        <div class="form-text">Numéro unique pour cette chambre</div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="typeChambre" class="form-label">
+                                            Type de chambre <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select" id="typeChambre" th:field="*{typeChambre}" required>
+                                            <option value="">Sélectionnez un type</option>
+                                            <option value="SIMPLE">Chambre Simple</option>
+                                            <option value="DOUBLE">Chambre Double</option>
+                                            <option value="TWIN">Chambre Twin</option>
+                                            <option value="SUITE">Suite</option>
+                                            <option value="DELUXE">Chambre Deluxe</option>
+                                            <option value="FAMILIALE">Chambre Familiale</option>
+                                            <option value="EXECUTIVE">Chambre Executive</option>
+                                            <option value="PRESIDENTIELLE">Suite Présidentielle</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <label for="capacite" class="form-label">
+                                            Capacité <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select" id="capacite" th:field="*{capacite}" required>
+                                            <option value="1">1 personne</option>
+                                            <option value="2">2 personnes</option>
+                                            <option value="3">3 personnes</option>
+                                            <option value="4">4 personnes</option>
+                                            <option value="5">5 personnes</option>
+                                            <option value="6">6+ personnes</option>
+                                        </select>
+                                        <div class="form-text">Nombre maximum d'occupants</div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="superficie" class="form-label">Superficie (m²)</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="superficie"
+                                                th:field="*{superficie}" min="10" max="500" step="0.5">
+                                            <span class="input-group-text">m²</span>
+                                        </div>
+                                        <div class="form-text">Surface de la chambre</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tarification -->
+                            <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="bi bi-currency-dollar me-2"></i>Tarification
+                                </h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="prixNuit" class="form-label">
+                                            Prix par nuit <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group price-input">
+                                            <input type="number" class="form-control" id="prixNuit"
+                                                th:field="*{prixNuit}" min="0" step="0.01" required>
+                                            <span class="input-group-text">MRU</span>
+                                        </div>
+                                        <div class="form-text">Prix HT pour une nuit</div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="prixWeekend" class="form-label">Prix weekend</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="prixWeekend"
+                                                th:field="*{prixWeekend}" min="0" step="0.01">
+                                            <span class="input-group-text">MRU</span>
+                                        </div>
+                                        <div class="form-text">Prix spécial pour vendredi/samedi</div>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <label for="taxeSejour" class="form-label">Taxe de séjour</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="taxeSejour"
+                                                th:field="*{taxeSejour}" min="0" step="0.01" value="20">
+                                            <span class="input-group-text">MRU/personne</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="depotGarantie" class="form-label">Dépôt de garantie</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="depotGarantie"
+                                                th:field="*{depotGarantie}" min="0" step="0.01">
+                                            <span class="input-group-text">MRU</span>
+                                        </div>
+                                        <div class="form-text">Remboursable après le séjour</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section Images -->
+                            <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="bi bi-images me-2"></i>Images de la chambre
+                                </h5>
+                                <div class="mb-3">
+                                    <label for="imageFiles" class="form-label">Télécharger des images</label>
+                                    <input type="file" class="form-control" id="imageFiles" name="imageFiles" multiple
+                                        accept="image/*" onchange="previewRoomImages(this, 'room-preview')">
+                                    <div class="form-text">
+                                        Formats supportés: JPG, PNG, GIF. Max 5MB par image.
+                                    </div>
+                                </div>
+
+                                <!-- Aperçu des images -->
+                                <div id="room-preview" class="row g-2 mt-2"></div>
+                            </div>
+                            <!-- Boutons d'action -->
+                            <div class="row mt-4">
+                                <div class="col-md-4">
+                                    <button type="button" class="btn btn-outline-secondary w-100"
+                                        onclick="window.history.back()">
+                                        <i class="bi bi-x-circle me-2"></i>Annuler
+                                    </button>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="reset" class="btn btn-outline-warning w-100">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>Réinitialiser
+                                    </button>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-save me-2"></i>Enregistrer la Chambre
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Équipements -->
+                            <!-- <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="bi bi-tools me-2"></i>Équipements
+                                </h5>
+                                <div class="mb-3">
+                                    <label class="form-label">Sélectionnez les équipements disponibles</label>
+                                    <div class="d-flex flex-wrap gap-2 mb-3" id="equipmentsContainer">
+                                        <span class="badge bg-light text-dark border equipment-badge"
+                                            data-equipment="WIFI">
+                                            <i class="bi bi-wifi me-1"></i>WiFi Gratuit
+                                        </span>
+                                        <span class="badge bg-light text-dark border equipment-badge"
+                                            data-equipment="TV">
+                                            <i class="bi bi-tv me-1"></i>Télévision
+                                        </span>
+                                        <span class="badge bg-light text-dark border equipment-badge"
+                                            data-equipment="AC">
+                                            <i class="bi bi-thermometer-snow me-1"></i>Climatisation
+                                        </span>
+                                        <span class="badge bg-light text-dark border equipment-badge"
+                                            data-equipment="MINIBAR">
+                                            <i class="bi bi-cup-straw me-1"></i>Minibar
+                                        </span>
+                                        <span class="badge bg-light text-dark border equipment-badge"
+                                            data-equipment="COFFRE">
+                                            <i class="bi bi-lock me-1"></i>Coffre-fort
+                                        </span>
+                                        <span class="badge bg-light text-dark border equipment-badge"
+                                            data-equipment="DOUCHE">
+                                            <i class="bi bi-droplet me-1"></i>Douche
+                                        </span>
+                                        <span class="badge bg-light text-dark border equipment-badge"
+                                            data-equipment="BAIN">
+                                            <i class="bi bi-water me-1"></i>Baignoire
+                                        </span>
+                                        <span class="badge bg-light text-dark border equipment-badge"
+                                            data-equipment="BALCON">
+                                            <i class="bi bi-door-open me-1"></i>Balcon/Terrasse
+                                        </span>
+                                        <span class="badge bg-light text-dark border equipment-badge"
+                                            data-equipment="VUE_MER">
+                                            <i class="bi bi-binoculars me-1"></i>Vue mer
+                                        </span>
+                                        <span class="badge bg-light text-dark border equipment-badge"
+                                            data-equipment="VUE_VILLE">
+                                            <i class="bi bi-building me-1"></i>Vue ville
+                                        </span>
+                                    </div>
+                                    <input type="hidden" id="equipements" name="equipements" th:field="*{equipements}">
+                                    <div class="form-text">Cliquez pour sélectionner/désélectionner</div>
+                                </div>
+
+                            </div> -->
+
+                            <!-- Description et photos -->
+                            <!-- <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="bi bi-card-text me-2"></i>Description et photos
+                                </h5>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" th:field="*{description}" rows="4"
+                                        placeholder="Décrivez la chambre..."></textarea>
+                                    <div class="form-text">
+                                        Décrivez les caractéristiques, ambiance, et avantages de cette chambre
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Photos de la chambre</label>
+                                    <div class="border rounded p-3 text-center">
+                                        <i class="bi bi-images display-1 text-muted opacity-25 d-block mb-3"></i>
+                                        <p class="text-muted mb-3">Glissez-déposez les photos ou cliquez pour parcourir
+                                        </p>
+                                        <input type="file" class="form-control" id="photos" multiple accept="image/*">
+                                        <div class="form-text">Formats supportés: JPG, PNG. Max 5MB par image</div>
+                                    </div>
+                                </div>
+                            </div> -->
+
+                            <!-- Statut et disponibilité -->
+                            <!-- <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="bi bi-toggle-on me-2"></i>Statut et disponibilité
+                                </h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                id="disponible" th:field="*{disponible}" checked>
+                                            <label class="form-check-label" for="disponible">
+                                                Disponible immédiatement
+                                            </label>
+                                        </div>
+                                        <div class="form-text">Si désactivé, la chambre ne sera pas proposée à la
+                                            réservation</div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="statutNettoyage" class="form-label">Statut de nettoyage</label>
+                                        <select class="form-select" id="statutNettoyage" th:field="*{statutNettoyage}">
+                                            <option value="PROPRE">Propre</option>
+                                            <option value="A_NETTOYER">À nettoyer</option>
+                                            <option value="EN_COURS">En cours</option>
+                                            <option value="VERIFIE">Vérifié</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div> -->
+
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aperçu en temps réel -->
+            <!-- <div class="col-lg-4">
+                <div class="sticky-top" style="top: 20px;"> -->
+            <!-- <div class="card shadow">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-eye me-2"></i>Aperçu de la chambre
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="room-preview">
+                                <div class="text-center mb-4">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                                        <i class="bi bi-door-closed display-4 text-primary"></i>
+                                    </div>
+                                    <h4 id="previewNumero" class="text-primary">---</h4>
+                                    <p class="text-muted mb-0">Numéro de chambre</p>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h6 class="text-muted mb-2">Type:</h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span id="previewType" class="fw-bold">---</span>
+                                        <span id="previewCapacite" class="badge bg-info">--- pers.</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h6 class="text-muted mb-2">Prix:</h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span id="previewPrix" class="display-6 text-primary">0 MAD</span>
+                                        <small class="text-muted">/nuit</small>
+                                    </div>
+                                    <small id="previewSuperficie" class="text-muted">Superficie: --- m²</small>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h6 class="text-muted mb-2">Équipements:</h6>
+                                    <div id="previewEquipements" class="d-flex flex-wrap gap-1">
+                                        <span class="badge bg-light text-dark border">---</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h6 class="text-muted mb-2">Statut:</h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span id="previewDisponible" class="badge bg-success">Disponible</span>
+                                        <span id="previewNettoyage" class="badge bg-secondary">Propre</span>
+                                    </div>
+                                </div>
+
+                                <div class="text-center mt-4">
+                                    <button class="btn btn-outline-primary" onclick="previewChambre()">
+                                        <i class="bi bi-arrow-repeat me-2"></i>Actualiser l'aperçu
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+
+            <!-- Guide rapide -->
+            <!-- <div class="card mt-4 border-info">
+                        <div class="card-header bg-info bg-opacity-10">
+                            <h6 class="mb-0">
+                                <i class="bi bi-lightbulb me-2"></i>Conseils
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0 small">
+                                <li>Utilisez des numéros logiques (101, 102, etc.)</li>
+                                <li>Décrivez précisément la chambre</li>
+                                <li>Ajoutez plusieurs photos sous différents angles</li>
+                                <li>Mettez à jour régulièrement la disponibilité</li>
+                                <li>Considérez les tarifs spéciaux pour les saisons</li>
+                            </ul>
+                        </div>
+                    </div> -->
+            <!-- </div>
+            </div> -->
+        </div>
+    </div>
+
+    <div layout:fragment="scripts">
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Gestion des équipements
+                const equipmentBadges = document.querySelectorAll('.equipment-badge');
+                equipmentBadges.forEach(badge => {
+                    badge.addEventListener('click', function () {
+                        this.classList.toggle('selected');
+                        updateEquipmentsInput();
+                    });
+                });
+
+                // Initialiser les équipements sélectionnés si déjà présents
+                const equipementsInput = document.getElementById('equipements');
+                if (equipementsInput && equipementsInput.value) {
+                    const selectedEquipments = equipementsInput.value.split(',');
+                    equipmentBadges.forEach(badge => {
+                        if (selectedEquipments.includes(badge.dataset.equipment)) {
+                            badge.classList.add('selected');
+                        }
+                    });
+                }
+
+                function updateEquipmentsInput() {
+                    const selected = Array.from(document.querySelectorAll('.equipment-badge.selected'))
+                        .map(badge => badge.dataset.equipment);
+                    if (equipementsInput) {
+                        equipementsInput.value = selected.join(',');
+                    }
+                    updatePreview();
+                }
+
+                // Mise à jour de l'aperçu en temps réel
+                function updatePreview() {
+                    try {
+                        // Numéro
+                        const numeroElement = document.getElementById('numero');
+                        const previewNumero = document.getElementById('previewNumero');
+                        if (numeroElement && previewNumero) {
+                            previewNumero.textContent = numeroElement.value || '---';
+                        }
+
+                        // Type
+                        const typeSelect = document.getElementById('typeChambre');
+                        const previewType = document.getElementById('previewType');
+                        if (typeSelect && previewType) {
+                            const type = typeSelect.options[typeSelect.selectedIndex]?.text || '---';
+                            previewType.textContent = type;
+                        }
+
+                        // Capacité
+                        const capaciteElement = document.getElementById('capacite');
+                        const previewCapacite = document.getElementById('previewCapacite');
+                        if (capaciteElement && previewCapacite) {
+                            previewCapacite.textContent = (capaciteElement.value || '---') + ' pers.';
+                        }
+
+                        // Prix
+                        const prixElement = document.getElementById('prixNuit');
+                        const previewPrix = document.getElementById('previewPrix');
+                        if (prixElement && previewPrix) {
+                            previewPrix.textContent = (prixElement.value || '0') + ' MAD';
+                        }
+
+                        // Superficie
+                        const superficieElement = document.getElementById('superficie');
+                        const previewSuperficie = document.getElementById('previewSuperficie');
+                        if (superficieElement && previewSuperficie) {
+                            previewSuperficie.textContent = 'Superficie: ' + (superficieElement.value || '---') + ' m²';
+                        }
+
+                        // Équipements
+                        const previewEquipements = document.getElementById('previewEquipements');
+                        if (previewEquipements) {
+                            previewEquipements.innerHTML = '';
+                            const selectedEquipments = document.querySelectorAll('.equipment-badge.selected');
+                            if (selectedEquipments.length > 0) {
+                                selectedEquipments.forEach(badge => {
+                                    const span = document.createElement('span');
+                                    span.className = 'badge bg-light text-dark border me-1 mb-1';
+                                    span.textContent = badge.textContent.trim();
+                                    previewEquipements.appendChild(span);
+                                });
+                            } else {
+                                const span = document.createElement('span');
+                                span.className = 'badge bg-light text-dark border';
+                                span.textContent = 'Aucun équipement';
+                                previewEquipements.appendChild(span);
+                            }
+                        }
+
+                        // Disponibilité
+                        const disponibleElement = document.getElementById('disponible');
+                        const previewDisponible = document.getElementById('previewDisponible');
+                        if (disponibleElement && previewDisponible) {
+                            const disponible = disponibleElement.checked;
+                            previewDisponible.textContent = disponible ? 'Disponible' : 'Indisponible';
+                            previewDisponible.className = disponible ? 'badge bg-success' : 'badge bg-danger';
+                        }
+
+                        // Nettoyage
+                        const nettoyageElement = document.getElementById('statutNettoyage');
+                        const previewNettoyage = document.getElementById('previewNettoyage');
+                        if (nettoyageElement && previewNettoyage) {
+                            const nettoyageText = nettoyageElement.options[nettoyageElement.selectedIndex]?.text || 'Propre';
+                            previewNettoyage.textContent = nettoyageText;
+
+                            // Changer la couleur selon le statut
+                            const statusClass = {
+                                'PROPRE': 'bg-success',
+                                'A_NETTOYER': 'bg-warning',
+                                'EN_COURS': 'bg-info',
+                                'VERIFIE': 'bg-primary'
+                            }[nettoyageElement.value] || 'bg-secondary';
+                            previewNettoyage.className = `badge ${statusClass}`;
+                        }
+                    } catch (error) {
+                        console.error('Erreur mise à jour aperçu:', error);
+                    }
+                }
+
+
+                // Fonction pour prévisualiser les images
+                function previewRoomImages(input, previewId) {
+                    const preview = document.getElementById(previewId);
+                    preview.innerHTML = '';
+
+                    if (input.files && input.files.length > 0) {
+                        for (let i = 0; i < input.files.length; i++) {
+                            const file = input.files[i];
+                            const reader = new FileReader();
+
+                            reader.onload = function (e) {
+                                const col = document.createElement('div');
+                                col.className = 'col-4 col-md-3';
+
+                                const card = document.createElement('div');
+                                card.className = 'card h-100';
+
+                                const img = document.createElement('img');
+                                img.src = e.target.result;
+                                img.className = 'card-img-top';
+                                img.style.height = '100px';
+                                img.style.objectFit = 'cover';
+
+                                const cardBody = document.createElement('div');
+                                cardBody.className = 'card-body p-2';
+
+                                const fileName = document.createElement('small');
+                                fileName.className = 'text-muted d-block text-truncate';
+                                fileName.textContent = file.name;
+
+                                const fileSize = document.createElement('small');
+                                fileSize.className = 'text-muted d-block';
+                                fileSize.textContent = (file.size / 1024).toFixed(2) + ' KB';
+
+                                cardBody.appendChild(fileName);
+                                cardBody.appendChild(fileSize);
+                                card.appendChild(img);
+                                card.appendChild(cardBody);
+                                col.appendChild(card);
+                                preview.appendChild(col);
+                            };
+
+                            reader.readAsDataURL(file);
+                        }
+                    }
+                }
+
+                // Modifier la validation du formulaire pour inclure les images
+                document.addEventListener('DOMContentLoaded', function () {
+                    const forms = document.querySelectorAll('form[id$="Form"]');
+
+                    forms.forEach(form => {
+                        form.addEventListener('submit', function (e) {
+                            const imageInputs = form.querySelectorAll('input[type="file"][name*="image"]');
+
+                            imageInputs.forEach(input => {
+                                if (input.files && input.files.length > 0) {
+                                    for (let file of input.files) {
+                                        // Vérifier la taille (5MB max)
+                                        if (file.size > 5 * 1024 * 1024) {
+                                            e.preventDefault();
+                                            alert(`L'image ${file.name} dépasse la taille maximale de 5MB`);
+                                            return;
+                                        }
+
+                                        // Vérifier le type
+                                        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                                        if (!allowedTypes.includes(file.type)) {
+                                            e.preventDefault();
+                                            alert(`Le format de l'image ${file.name} n'est pas supporté. Utilisez JPG, PNG ou GIF.`);
+                                            return;
+                                        }
+                                    }
+                                }
+                            });
+                        });
+                    });
+                });
+                // Écouter les changements sur tous les champs
+                const inputsToWatch = ['numero', 'typeChambre', 'capacite', 'superficie', 'prixNuit', 'disponible', 'statutNettoyage'];
+                inputsToWatch.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener('input', updatePreview);
+                        element.addEventListener('change', updatePreview);
+                    }
+                });
+
+                // Initialiser l'aperçu
+                updatePreview();
+
+                // Fonction pour le bouton d'actualisation
+                window.previewChambre = function () {
+                    updatePreview();
+                    // Optionnel: notification plus discrète
+                    const btn = event.target;
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Aperçu actualisé!';
+                    btn.classList.add('btn-success');
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-outline-primary');
+                    }, 1500);
+                }
+
+                // Validation améliorée
+                const form = document.getElementById('chambreForm');
+                if (form) {
+                    form.addEventListener('submit', function (e) {
+                        const numero = document.getElementById('numero').value.trim();
+                        const prix = document.getElementById('prixNuit').value;
+                        const type = document.getElementById('typeChambre').value;
+                        const capacite = document.getElementById('capacite').value;
+
+                        let errors = [];
+
+                        if (!numero) errors.push('Le numéro de chambre est obligatoire');
+                        if (!type) errors.push('Le type de chambre est obligatoire');
+                        if (!capacite) errors.push('La capacité est obligatoire');
+                        if (!prix || parseFloat(prix) <= 0) errors.push('Le prix par nuit doit être supérieur à 0');
+
+                        if (errors.length > 0) {
+                            e.preventDefault();
+                            alert('Veuillez corriger les erreurs suivantes:\n\n' + errors.join('\n'));
+                        }
+                    });
+                }
+            });
+        </script>
+    </div>
+</body>
+
+</html>

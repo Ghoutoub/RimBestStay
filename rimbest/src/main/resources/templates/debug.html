@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug - RIMBestStay</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Page de débogage</h1>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Statistiques de la base de données</h5>
+            </div>
+            <div class="card-body">
+                <p>Nombre d'utilisateurs: <span th:text="${userCount}">0</span></p>
+                
+                <h6>Liste des utilisateurs:</h6>
+                <div th:if="${users.empty}">
+                    <div class="alert alert-warning">Aucun utilisateur trouvé</div>
+                </div>
+                <div th:unless="${users.empty}">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>Actif</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="user : ${users}">
+                                <td th:text="${user.id}">ID</td>
+                                <td th:text="${user.nom}">Nom</td>
+                                <td th:text="${user.email}">Email</td>
+                                <td th:text="${user.actif}">Actif</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Tester l'inscription</h5>
+            </div>
+            <div class="card-body">
+                <form action="/inscription" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Nom</label>
+                        <input type="text" name="nom" class="form-control" value="Test User" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" value="test@example.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mot de passe</label>
+                        <input type="password" name="motDePasse" class="form-control" value="password123" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Téléphone</label>
+                        <input type="text" name="telephone" class="form-control" value="0123456789">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Adresse</label>
+                        <textarea name="adresse" class="form-control">Test Address</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Tester l'inscription</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <a href="/" class="btn btn-secondary">Retour à l'accueil</a>
+        </div>
+    </div>
+</body>
+</html>

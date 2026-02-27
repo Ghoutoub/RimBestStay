@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Éditer mon profil - RIMBestStay</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container mt-4">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-pencil-square me-2"></i>Éditer mon profil
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/profile/update}" th:object="${profile}" method="post">
+                                <!-- Champs communs -->
+                                <div class="mb-3">
+                                    <label for="nom" class="form-label">Nom complet</label>
+                                    <input type="text" class="form-control" id="nom" th:field="*{nom}" required>
+                                    <div th:if="${#fields.hasErrors('nom')}" class="text-danger">
+                                        <small th:errors="*{nom}"></small>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                                    <div th:if="${#fields.hasErrors('email')}" class="text-danger">
+                                        <small th:errors="*{email}"></small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Champs spécifiques Client -->
+                                <div th:if="${isClient}">
+                                    <div class="mb-3">
+                                        <label for="telephone" class="form-label">Téléphone</label>
+                                        <input type="tel" class="form-control" id="telephone" th:field="*{telephone}">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="adresse" class="form-label">Adresse</label>
+                                        <textarea class="form-control" id="adresse" th:field="*{adresse}" rows="2"></textarea>
+                                    </div>
+                                </div>
+                                
+                                <!-- Champs spécifiques Partenaire -->
+                                <div th:if="${isPartenaire}">
+                                    <div class="mb-3">
+                                        <label for="nomEntreprise" class="form-label">Nom de l'entreprise</label>
+                                        <input type="text" class="form-control" id="nomEntreprise" th:field="*{nomEntreprise}" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="siret" class="form-label">SIRET</label>
+                                        <input type="text" class="form-control" id="siret" th:field="*{siret}">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="telephonePro" class="form-label">Téléphone professionnel</label>
+                                        <input type="tel" class="form-control" id="telephonePro" th:field="*{telephonePro}">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="adresseEntreprise" class="form-label">Adresse de l'entreprise</label>
+                                        <textarea class="form-control" id="adresseEntreprise" th:field="*{adresseEntreprise}" rows="2"></textarea>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="siteWeb" class="form-label">Site Web</label>
+                                        <input type="url" class="form-control" id="siteWeb" th:field="*{siteWeb}">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label">Description</label>
+                                        <textarea class="form-control" id="description" th:field="*{description}" rows="3"></textarea>
+                                    </div>
+                                </div>
+                                
+                                <!-- Champs spécifiques Administrateur -->
+                                <div th:if="${isAdmin}">
+                                    <div class="mb-3">
+                                        <label for="departement" class="form-label">Département</label>
+                                        <input type="text" class="form-control" id="departement" th:field="*{departement}">
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mt-4">
+                                    <a th:href="@{/profile}" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-left me-1"></i>Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle me-1"></i>Enregistrer les modifications
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

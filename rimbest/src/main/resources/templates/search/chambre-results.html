@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Chambres disponibles - RIMBestStay</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <!-- En-tête -->
+        <div class="container-fluid bg-light py-3">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0">
+                            <i class="bi bi-door-open me-2"></i>
+                            Chambres disponibles - 
+                            <span th:text="${hotel.nom}">Hôtel</span>
+                        </h4>
+                        <p class="text-muted mb-0">
+                            Du <span th:text="${#dates.format(searchDTO.dateArrivee, 'dd/MM/yyyy')}"></span> 
+                            au <span th:text="${#dates.format(searchDTO.dateDepart, 'dd/MM/yyyy')}"></span>
+                            · <span th:text="${searchDTO.adultes}"></span> adulte(s)
+                            <span th:if="${searchDTO.enfants > 0}">, <span th:text="${searchDTO.enfants}"></span> enfant(s)</span>
+                        </p>
+                    </div>
+                    <a th:href="@{/search/hotels}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left me-1"></i>Retour aux hôtels
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des chambres -->
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <span th:text="${chambres.size()}"></span> chambre(s) disponible(s) pour vos critères
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4" th:if="${not #lists.isEmpty(chambres)}">
+                <div th:each="chambre : ${chambres}" class="col-lg-4 col-md-6">
+                    <div class="card chambre-card border">
+                        <div class="card-body">
+                            <!-- Type et capacité -->
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5 class="card-title" th:text="${chambre.typeChambre}">Chambre Double</h5>
+                                <span class="badge bg-primary">
+                                    <i class="bi bi-people"></i>
+                                    <span th:text="${chambre.capacite}"></span> pers.
+                                </span>
+                            </div>
+                            
+                            <!-- Équipements -->
+                            <div class="mb-3">
+                                <div class="d-flex flex-wrap gap-1">
+                                    <span th:each="equipement : ${chambre.equipements}" 
+                                          class="badge bg-light text-dark">
+                                        <i th:class="${#strings.contains(equipement, 'TV')} ? 'bi bi-tv' : 
+                                                    ${#strings.contains(equipement, 'AC')} ? 'bi bi-snow' :
+                                                    ${#strings.contains(equipement, 'WIFI')} ? 'bi bi-wifi' : 'bi bi-check'"></i>
+                                        <span th:text="${equipement}"></span>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Description -->
+                            <p class="card-text text-muted small" th:text="${chambre.description}">
+                                Description de la chambre...
+                            </p>
+                            
+                            <!-- Prix -->
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div>
+                                    <div class="text-muted small">Prix total pour</div>
+                                    <h4 class="text-success mb-0">
+                                        <span th:text="${chambre.prixTotal}"></span>€
+                                        <small class="text-muted">(<span th:text="${chambre.prixParNuit}"></span>€/nuit)</small>
+                                    </h4>
+                                </div>
+                                <div>
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle"></i> Disponible
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bouton Réserver -->
+                        <div class="card-footer bg-white">
+                            <a th:href="@{/reservation/create/{chambreId}(chambreId=${chambre.id}, 
+                                  dateArrivee=${searchDTO.dateArrivee}, 
+                                  dateDepart=${searchDTO.dateDepart},
+                                  adultes=${searchDTO.adultes},
+                                  enfants=${searchDTO.enfants})}" 
+                               class="btn btn-primary w-100">
+                                <i class="bi bi-calendar-check me-1"></i>Réserver cette chambre
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aucune chambre disponible -->
+            <div th:if="${#lists.isEmpty(chambres)}" class="text-center py-5">
+                <i class="bi bi-door-closed display-1 text-muted"></i>
+                <h4 class="mt-3">Aucune chambre disponible</h4>
+                <p class="text-muted">Aucune chambre ne correspond à vos critères pour cet hôtel</p>
+                <a th:href="@{/search/hotels}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Voir d'autres hôtels
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

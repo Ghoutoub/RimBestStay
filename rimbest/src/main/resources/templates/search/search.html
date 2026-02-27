@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>RIMBestStay - Recherche d'Hôtels</title>
+    <link rel="stylesheet" href="/css/search.css">
+    <style>
+        .search-container {
+            padding: 2rem 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .search-form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+        .search-title {
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-weight: bold;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-right: none;
+        }
+        .form-control {
+            border-left: none;
+            padding-left: 0;
+        }
+        .form-control:focus {
+            box-shadow: none;
+            border-color: #ced4da;
+        }
+        .btn-search {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: transform 0.3s;
+        }
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        .date-inputs {
+            display: flex;
+            gap: 10px;
+        }
+        .date-inputs input {
+            flex: 1;
+        }
+        @media (max-width: 768px) {
+            .date-inputs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="search-container">
+            <div class="container">
+                <h1 class="search-title">Trouvez l'hôtel parfait pour votre séjour</h1>
+                
+                <div class="search-form-card">
+                    <!-- Afficher les erreurs -->
+                    <div th:if="${error}" class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span th:text="${error}"></span>
+                    </div>
+                    
+                    <!-- Formulaire de recherche -->
+                    <form th:action="@{/search/results}" method="get" id="searchForm">
+                        <div class="row g-4">
+                            <!-- Destination -->
+                            <div class="col-md-12">
+                                <label class="form-label">Destination</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-geo-alt fs-5"></i>
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control form-control-lg" 
+                                           name="ville" 
+                                           placeholder="Entrez une ville, région ou hôtel..." 
+                                           th:value="${searchCriteria?.ville}"
+                                           required
+                                           id="destinationInput">
+                                </div>
+                                <small class="text-muted mt-1 d-block">
+                                    Exemples: Marrakech, Casablanca, Rabat, Agadir
+                                </small>
+                            </div>
+                            
+                            <!-- Dates -->
+                            <div class="col-md-6">
+                                <label class="form-label">Date d'arrivée</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-calendar-plus fs-5"></i>
+                                    </span>
+                                    <input type="date" 
+                                           class="form-control form-control-lg" 
+                                           name="dateArrivee" 
+                                           th:value="${searchCriteria?.dateArrivee ?: aujourdhui}"
+                                           th:min="${aujourdhui}"
+                                           id="dateArrivee">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Date de départ</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-calendar-minus fs-5"></i>
+                                    </span>
+                                    <input type="date" 
+                                           class="form-control form-control-lg" 
+                                           name="dateDepart" 
+                                           th:value="${searchCriteria?.dateDepart ?: demain}"
+                                           th:min="${demain}"
+                                           id="dateDepart">
+                                </div>
+                            </div>
+                            
+                            <!-- Voyageurs -->
+                            <div class="col-md-4">
+                                <label class="form-label">Adultes</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person fs-5"></i>
+                                    </span>
+                                    <select class="form-select form-select-lg" name="adultes">
+                                        <option th:each="i : ${#numbers.sequence(1, 10)}" 
+                                                th:value="${i}"
+                                                th:text="${i}"
+                                                th:selected="${(searchCriteria?.adultes ?: 2) == i}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label">Enfants</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person-heart fs-5"></i>
+                                    </span>
+                                    <select class="form-select form-select-lg" name="enfants">
+                                        <option th:each="i : ${#numbers.sequence(0, 10)}" 
+                                                th:value="${i}"
+                                                th:text="${i}"
+                                                th:selected="${(searchCriteria?.enfants ?: 0) == i}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label">Chambres</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-door-closed fs-5"></i>
+                                    </span>
+                                    <select class="form-select form-select-lg" name="chambres">
+                                        <option th:each="i : ${#numbers.sequence(1, 5)}" 
+                                                th:value="${i}"
+                                                th:text="${i}"
+                                                th:selected="${(searchCriteria?.chambres ?: 1) == i}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Filtres optionnels -->
+                            <div class="col-12">
+                                <a class="d-block text-decoration-none" 
+                                   data-bs-toggle="collapse" 
+                                   href="#advancedFilters" 
+                                   role="button">
+                                    <i class="bi bi-sliders me-2"></i>
+                                    <span>Filtres avancés (optionnel)</span>
+                                </a>
+                            </div>
+                            
+                            <!-- Filtres avancés (collapse) -->
+                            <div class="collapse col-12" id="advancedFilters">
+                                <div class="card card-body border-0 bg-light mt-3">
+                                    <div class="row g-4">
+                                        <!-- Budget -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Budget par nuit (€)</label>
+                                            <div class="row g-2">
+                                                <div class="col">
+                                                    <input type="number" 
+                                                           class="form-control" 
+                                                           name="prixMin" 
+                                                           placeholder="Min" 
+                                                           min="0"
+                                                           th:value="${searchCriteria?.prixMin}">
+                                                </div>
+                                                <div class="col">
+                                                    <input type="number" 
+                                                           class="form-control" 
+                                                           name="prixMax" 
+                                                           placeholder="Max" 
+                                                           min="0"
+                                                           th:value="${searchCriteria?.prixMax}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Étoiles -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Classement hôtelier</label>
+                                            <select class="form-select" name="etoilesMin">
+                                                <option value="">Toutes les étoiles</option>
+                                                <option value="5" th:selected="${searchCriteria?.etoilesMin == 5}">★★★★★ 5 étoiles</option>
+                                                <option value="4" th:selected="${searchCriteria?.etoilesMin == 4}">★★★★☆ 4 étoiles et plus</option>
+                                                <option value="3" th:selected="${searchCriteria?.etoilesMin == 3}">★★★☆☆ 3 étoiles et plus</option>
+                                                <option value="2" th:selected="${searchCriteria?.etoilesMin == 2}">★★☆☆☆ 2 étoiles et plus</option>
+                                                <option value="1" th:selected="${searchCriteria?.etoilesMin == 1}">★☆☆☆☆ 1 étoile et plus</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Tri -->
+                                        <div class="col-md-12">
+                                            <label class="form-label">Trier par</label>
+                                            <select class="form-select" name="triPar">
+                                                <option value="recommandation" th:selected="${searchCriteria?.triPar == 'recommandation'}">Recommandation</option>
+                                                <option value="prix_croissant" th:selected="${searchCriteria?.triPar == 'prix_croissant'}">Prix croissant</option>
+                                                <option value="prix_decroissant" th:selected="${searchCriteria?.triPar == 'prix_decroissant'}">Prix décroissant</option>
+                                                <option value="etoiles" th:selected="${searchCriteria?.triPar == 'etoiles'}">Étoiles (haut vers bas)</option>
+                                                <option value="note" th:selected="${searchCriteria?.triPar == 'note'}">Note (haut vers bas)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Bouton Rechercher -->
+                            <div class="col-12 text-center mt-4">
+                                <button type="submit" class="btn btn-search btn-lg px-5">
+                                    <i class="bi bi-search me-2"></i>
+                                    Rechercher des hôtels
+                                </button>
+                            </div>
+                            
+                            <!-- Lien de test rapide -->
+                            <div class="col-12 text-center mt-3">
+                                <p class="text-muted">
+                                    Test rapide: 
+                                    <a th:href="@{/search/results(ville='Marrakech')}" class="text-decoration-none ms-2">Marrakech</a> | 
+                                    <a th:href="@{/search/results(ville='Casablanca')}" class="text-decoration-none ms-2">Casablanca</a> | 
+                                    <a th:href="@{/search/results(ville='Rabat')}" class="text-decoration-none ms-2">Rabat</a>
+                                </p>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Script JavaScript -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion des dates
+            const today = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+            
+            const arrivalInput = document.getElementById('dateArrivee');
+            const departureInput = document.getElementById('dateDepart');
+            
+            // Si pas de valeur, mettre aujourd'hui et demain
+            if (arrivalInput && !arrivalInput.value) {
+                arrivalInput.value = today;
+                arrivalInput.min = today;
+            }
+            
+            if (departureInput && !departureInput.value) {
+                departureInput.value = tomorrow;
+                departureInput.min = tomorrow;
+            }
+            
+            // Validation des dates
+            if (arrivalInput && departureInput) {
+                arrivalInput.addEventListener('change', function() {
+                    const arrivalDate = new Date(this.value);
+                    const nextDay = new Date(arrivalDate.getTime() + 86400000);
+                    departureInput.min = nextDay.toISOString().split('T')[0];
+                    
+                    if (new Date(departureInput.value) < nextDay) {
+                        departureInput.value = nextDay.toISOString().split('T')[0];
+                    }
+                });
+            }
+            
+            // Auto-complétion pour la destination
+            const destinationInput = document.getElementById('destinationInput');
+            let autocompleteTimeout;
+            
+            if (destinationInput) {
+                destinationInput.addEventListener('input', function() {
+                    clearTimeout(autocompleteTimeout);
+                    
+                    if (this.value.length < 2) return;
+                    
+                    autocompleteTimeout = setTimeout(() => {
+                        fetchAutocomplete(this.value);
+                    }, 300);
+                });
+            }
+            
+            function fetchAutocomplete(query) {
+                fetch('/search/autocomplete?q=' + encodeURIComponent(query))
+                    .then(response => response.json())
+                    .then(data => {
+                        showAutocomplete(data);
+                    })
+                    .catch(error => console.error('Erreur autocomplete:', error));
+            }
+            
+            function showAutocomplete(suggestions) {
+                // Implémentation basique de l'autocomplétion
+                console.log('Suggestions:', suggestions);
+                // Vous pouvez implémenter une liste déroulante ici
+            }
+        });
+        /*]]>*/
+    </script>
+</body>
+</html>

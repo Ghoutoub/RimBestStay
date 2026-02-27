@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/base}">
+
+<head>
+    <title>Détails de la réservation - Admin</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Réservation <span th:text="${reservation.reference}"></span></h5>
+                            <span
+                                th:classappend="${reservation.statut == 'CONFIRMEE'} ? 'badge bg-success' : (${reservation.statut == 'EN_ATTENTE'} ? 'badge bg-warning' : (${reservation.statut == 'ANNULEE'} ? 'badge bg-danger' : 'badge bg-secondary'))"
+                                th:text="${reservation.statut}"></span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Informations client</h6>
+                                    <p>
+                                        <strong>Nom :</strong>
+                                        <span th:text="${reservation.clientNom}"></span>
+                                        <br>
+                                        <strong>Email :</strong>
+                                        <span th:text="${reservation.clientEmail}"></span>
+                                        <br>
+
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Informations de séjour</h6>
+                                    <p>
+                                        <strong>Dates :</strong>
+                                        <span
+                                            th:text="${#temporals.format(reservation.dateArrivee, 'dd/MM/yyyy')}"></span>
+                                        au
+                                        <span
+                                            th:text="${#temporals.format(reservation.dateDepart, 'dd/MM/yyyy')}"></span>
+                                        <br>
+                                        <strong>Nombre de nuits :</strong>
+                                        <span
+                                            th:text="${(reservation.dateDepart.toEpochDay() - reservation.dateArrivee.toEpochDay())}"></span>
+                                        <br>
+                                        <strong>Nombre de personnes :</strong>
+                                        <span th:text="${reservation.nombrePersonnes}"></span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>Informations de l'hébergement</h6>
+                                    <p>
+                                        <strong>Hôtel :</strong>
+                                        <a th:href="@{/hotel/details/{id}(id=${reservation.hotelId})}"
+                                            th:text="${reservation.hotelNom}"></a>
+                                        <br>
+                                        <strong>Chambre :</strong>
+                                        <a th:href="@{/chambre/details/{id}(id=${reservation.chambreId})}"
+                                            th:text="${reservation.chambreType + ' (n°' + reservation.chambreNumero + ')'}"></a>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Détails financiers</h6>
+                                    <table class="table table-sm">
+                                        <tbody>
+                                            <tr>
+                                                <td>Montant total</td>
+                                                <td class="text-end"
+                                                    th:text="${#numbers.formatDecimal(reservation.prixTotal, 1, 2, 'POINT') + ' MRU'}">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Statut du paiement</td>
+                                                <td class="text-end">
+                                                    <span
+                                                        th:classappend="${reservation.statut == 'CONFIRMEE'} ? 'badge bg-success' : (${reservation.statut == 'EN_ATTENTE'} ? 'badge bg-warning' : (${reservation.statut == 'ANNULEE'} ? 'badge bg-danger' : 'badge bg-secondary'))"
+                                                        th:text="${reservation.statut}"></span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between">
+                                <a th:href="@{/reservations/admin}" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left"></i> Retour
+                                </a>
+                                <div>
+                                    <form th:if="${reservation.statut == 'EN_ATTENTE'}"
+                                        th:action="@{/reservations/admin/confirmer/{id}(id=${reservation.id})}"
+                                        method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-success me-2"
+                                            onclick="return confirm('Êtes-vous sûr de vouloir confirmer cette réservation ?')">
+                                            <i class="bi bi-check-circle"></i> Confirmer
+                                        </button>
+                                    </form>
+                                    <button th:if="${reservation.statut != 'ANNULEE'}" type="button"
+                                        class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#annulerModal">
+                                        <i class="bi bi-x-circle"></i> Annuler
+                                    </button>
+
+                                    <!-- Form masqué pour soumission d'annulation -->
+                                    <form th:id="'annulationForm_' + ${reservation.id}"
+                                        th:action="@{/reservations/admin/annuler/{id}(id=${reservation.id})}"
+                                        method="post" style="display:none;">
+                                        <input type="hidden" name="raison" value="" />
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Historique des actions</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <small class="text-muted">Aujourd'hui, 10:30</small><br>
+                                    <span>Réservation créée</span>
+                                </li>
+                                <li class="mb-2">
+                                    <small class="text-muted">Hier, 15:45</small><br>
+                                    <span>Email de confirmation envoyé</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h6>Actions rapides</h6>
+                            <button class="btn btn-outline-primary w-100 mb-2">
+                                <i class="bi bi-envelope"></i> Envoyer un email
+                            </button>
+                            <button class="btn btn-outline-secondary w-100 mb-2">
+                                <i class="bi bi-printer"></i> Imprimer la facture
+                            </button>
+                            <button class="btn btn-outline-info w-100">
+                                <i class="bi bi-clock-history"></i> Voir l'historique
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal d'annulation -->
+        <div class="modal fade" id="annulerModal" tabindex="-1" aria-labelledby="annulerModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="annulerModalLabel">Annuler la réservation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Êtes-vous sûr de vouloir annuler cette réservation ?</p>
+                        <div class="mb-3">
+                            <label for="raisonAnnulation" class="form-label">Raison de l'annulation</label>
+                            <textarea class="form-control" id="raisonAnnulation" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="button" class="btn btn-danger"
+                            onclick="annulerReservation('${reservation.id}')">Confirmer l'annulation</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div layout:fragment="scripts">
+        <script>
+            function annulerReservation(reservationId) {
+                var raison = document.getElementById('raisonAnnulation').value;
+                if (!raison) {
+                    raison = 'Annulé par l\'administrateur';
+                }
+
+                // Mettre à jour la valeur du champ caché
+                var hiddenInput = document.querySelector('#annulationForm_' + reservationId + ' input[name=raison]');
+                hiddenInput.value = raison;
+
+                // Soumettre le formulaire
+                document.getElementById('annulationForm_' + reservationId).submit();
+
+                // Fermer le modal
+                var modalElement = document.getElementById('annulerModal');
+                var modal = bootstrap.Modal.getInstance(modalElement);
+                if (modal) {
+                    modal.hide();
+                }
+            }
+        </script>
+    </div>
+</body>
+
+</html>

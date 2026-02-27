@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Gestion des Réservations - Partenaire</title>
+    <style>
+        .reservation-detail-card {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .reservation-detail-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        
+        .stat-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: linear-gradient(135deg, #ffc107 0%, #ffca2c 100%);
+            color: #856404;
+        }
+        
+        .status-confirmed {
+            background: linear-gradient(135deg, #28a745 0%, #2ecc71 100%);
+            color: #155724;
+        }
+        
+        .status-cancelled {
+            background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+            color: #721c24;
+        }
+        
+        .status-refused {
+            background: linear-gradient(135deg, #6c757d 0%, #7f8c8d 100%);
+            color: #383d41;
+        }
+        
+        .detail-row {
+            border-bottom: 1px solid #eee;
+            padding: 12px 0;
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .customer-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .calendar-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .invoice-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid mt-4">
+        
+        <!-- En-tête -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <nav aria-label="breadcrumb" class="mb-3">
+                    <ol class="breadcrumb bg-light rounded-3 p-3">
+                        <li class="breadcrumb-item"><a th:href="@{/partenaire/dashboard}" class="text-decoration-none text-danger">
+                            <i class="bi bi-house-door"></i> Dashboard
+                        </a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/partenaire/reservations}" class="text-decoration-none text-danger">
+                            Gestion des Réservations
+                        </a></li>
+                        <li class="breadcrumb-item active fw-bold" th:text="#{'#' + ${reservation.id}}">#12345</li>
+                    </ol>
+                </nav>
+                <h1 class="display-6 text-danger fw-bold mb-2">
+                    <i class="bi bi-gear me-2"></i>Gestion de la Réservation
+                </h1>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-info-circle me-1"></i>Gérer et modifier les détails de la réservation
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/partenaire/reservations}" class="btn btn-outline-danger">
+                    <i class="bi bi-arrow-left me-2"></i>Retour à la liste
+                </a>
+            </div>
+        </div>
+
+        <!-- Alerte -->
+        <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span th:text="${message}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="reservation-detail-card card shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <h3 class="mb-2">Réservation <span th:text="#{'#' + ${reservation.id}}">#12345</span></h3>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span th:if="${reservation.statut == 'CONFIRMEE'}" 
+                                          class="stat-badge status-confirmed">
+                                        <i class="bi bi-check-circle me-1"></i>Confirmée
+                                    </span>
+                                    <span th:if="${reservation.statut == 'EN_ATTENTE'}" 
+                                          class="stat-badge status-pending">
+                                        <i class="bi bi-clock me-1"></i>En attente
+                                    </span>
+                                    <span th:if="${reservation.statut == 'ANNULEE'}" 
+                                          class="stat-badge status-cancelled">
+                                        <i class="bi bi-x-circle me-1"></i>Annulée
+                                    </span>
+                                    <span th:if="${reservation.statut == 'REFUSEE'}" 
+                                          class="stat-badge status-refused">
+                                        <i class="bi bi-x-circle me-1"></i>Refusée
+                                    </span>
+                                    <small class="text-muted">
+                                        Créée le <span th:text="${#dates.format(reservation.dateReservation, 'dd/MM/yyyy HH:mm')}">01/01/2024 14:30</span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="detail-row">
+                                    <strong>Date d'arrivée:</strong><br>
+                                    <span th:text="${#dates.format(reservation.dateArrivee, 'dd/MM/yyyy')}">01/01/2024</span>
+                                </div>
+                                <div class="detail-row">
+                                    <strong>Date de départ:</strong><br>
+                                    <span th:text="${#dates.format(reservation.dateDepart, 'dd/MM/yyyy')}">05/01/2024</span>
+                                </div>
+                                <div class="detail-row">
+                                    <strong>Nombres de nuits:</strong><br>
+                                    <span th:text="${reservation.nombreNuits}">4</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-row">
+                                    <strong>Nombre de chambres:</strong><br>
+                                    <span th:text="${reservation.nombreChambres}">1</span>
+                                </div>
+                                <div class="detail-row">
+                                    <strong>Nombre d'adultes:</strong><br>
+                                    <span th:text="${reservation.nombreAdultes}">2</span>
+                                </div>
+                                <div class="detail-row">
+                                    <strong>Nombre d'enfants:</strong><br>
+                                    <span th:text="${reservation.nombreEnfants ?: 0}">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-row">
+                            <strong>Description:</strong><br>
+                            <p class="mb-0" th:text="${reservation.description ?: 'Aucune description fournie'}">Description de la réservation...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="reservation-detail-card card shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="mb-3">Client</h4>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="customer-avatar me-3">
+                                <span th:text="${reservation.client?.nom?.substring(0,1)?.toUpperCase() ?: '?'}">?</span>
+                            </div>
+                        </div>
+                        <h5 class="mb-2" th:text="${reservation.client?.nom}">Client Exemple</h5>
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-envelope me-1"></i>
+                            <span th:text="${reservation.client?.email}">client@example.com</span>
+                        </p>
+                        <p class="text-muted mb-0">
+                            <i class="bi bi-telephone me-1"></i>
+                            <span th:text="${reservation.client?.telephone ?: 'Non fourni'}">Non fourni</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="reservation-detail-card card shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h4 class="mb-3">Hôtel</h4>
+                        <h5 class="mb-2" th:text="${reservation.hotel?.nom}">Hôtel Exemple</h5>
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-geo-alt me-1"></i>
+                            <span th:text="${reservation.hotel?.adresse}">Adresse de l'hôtel</span>
+                        </p>
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-telephone me-1"></i>
+                            <span th:text="${reservation.hotel?.telephone}">Téléphone de l'hôtel</span>
+                        </p>
+                        <p class="text-muted mb-0">
+                            <i class="bi bi-envelope me-1"></i>
+                            <span th:text="${reservation.hotel?.email}">Email de l'hôtel</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chambres réservées -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-door-open me-2"></i>Chambres Réservées
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3" th:each="chambre : ${reservation.chambres}">
+                        <div class="card h-100">
+                            <img th:src="${chambre.photoPrincipale ?: '/images/chambre-placeholder.jpg'}" 
+                                 class="card-img-top" alt="Chambre" style="height: 200px; object-fit: cover;">
+                            <div class="card-body">
+                                <h6 class="card-title" th:text="${chambre.numero}">Chambre 101</h6>
+                                <p class="card-text">
+                                    <i class="bi bi-layout-wtf me-1"></i>Type: <span th:text="${chambre.type}">Simple</span><br>
+                                    <i class="bi bi-people me-1"></i>Capacité: <span th:text="${chambre.capaciteMax}">2 personnes</span><br>
+                                    <i class="bi bi-currency-euro me-1"></i>Prix: <span th:text="${#numbers.formatCurrency(chambre.prix)}">€100.00</span>/nuit
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendrier de disponibilité -->
+        <div class="card shadow-sm mb-4 calendar-container">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-calendar me-2"></i>Calendrier de Disponibilité
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    La période de la réservation est actuellement bloquée dans le calendrier de disponibilité de l'hôtel.
+                </div>
+                <!-- Placeholder pour le calendrier - à implémenter avec une librairie JS -->
+                <div class="text-center p-4">
+                    <i class="bi bi-calendar fs-1 text-muted mb-2"></i>
+                    <p class="text-muted">Calendrier de disponibilité pour l'hôtel <strong th:text="${reservation.hotel?.nom}">Hôtel Exemple</strong></p>
+                    <p class="text-muted">Du <strong th:text="${#dates.format(reservation.dateArrivee, 'dd/MM/yyyy')}">01/01/2024</strong> au <strong th:text="${#dates.format(reservation.dateDepart, 'dd/MM/yyyy')}">05/01/2024</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Facturation -->
+        <div class="invoice-section">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">Détails de la facturation</h5>
+                    <div class="detail-row">
+                        <div class="d-flex justify-content-between">
+                            <span>Prix total:</span>
+                            <strong th:text="${#numbers.formatCurrency(reservation.prixTotal)}">€400.00</strong>
+                        </div>
+                    </div>
+                    <div class="detail-row" th:if="${reservation.reduction != null and reservation.reduction > 0}">
+                        <div class="d-flex justify-content-between">
+                            <span>Réduction:</span>
+                            <span class="text-success">-<span th:text="${#numbers.formatCurrency(reservation.reduction)}">€0.00</span></span>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="d-flex justify-content-between">
+                            <strong>Total payé:</strong>
+                            <strong class="text-success" th:text="${#numbers.formatCurrency(reservation.prixTotal - (reservation.reduction ?: 0))}">€400.00</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-3">Commission</h5>
+                    <div class="detail-row">
+                        <div class="d-flex justify-content-between">
+                            <span>Commission (15%):</span>
+                            <span class="text-primary" th:text="${#numbers.formatCurrency((reservation.prixTotal - (reservation.reduction ?: 0)) * 0.15)}">€60.00</span>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="d-flex justify-content-between">
+                            <strong>Net à payer:</strong>
+                            <strong class="text-success" th:text="${#numbers.formatCurrency((reservation.prixTotal - (reservation.reduction ?: 0)) * 0.85)}">€340.00</strong>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <small class="text-muted">
+                            La commission est automatiquement déduite du montant total. Le solde sera crédité sur votre compte partenaire.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card shadow-sm mt-4">
+            <div class="card-body text-center">
+                <div class="d-flex justify-content-center gap-3 action-buttons" th:if="${reservation.statut == 'EN_ATTENTE'}">
+                    <form th:action="@{/partenaire/reservations/{id}/confirmer(id=${reservation.id})}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-success btn-lg px-4" 
+                                th:onclick="|return confirm('Êtes-vous sûr de vouloir confirmer cette réservation ?')|">
+                            <i class="bi bi-check-circle me-2"></i>Confirmer la réservation
+                        </button>
+                    </form>
+                    <form th:action="@{/partenaire/reservations/{id}/refuser(id=${reservation.id})}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-lg px-4" 
+                                th:onclick="|return confirm('Êtes-vous sûr de vouloir refuser cette réservation ?')|">
+                            <i class="bi bi-x-circle me-2"></i>Refuser la réservation
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="d-flex justify-content-center gap-3 action-buttons" th:if="${reservation.statut == 'CONFIRMEE'}">
+                    <form th:action="@{/partenaire/reservations/{id}/annuler(id=${reservation.id})}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-warning btn-lg px-4" 
+                                th:onclick="|return confirm('Êtes-vous sûr de vouloir annuler cette réservation ? Cette action affectera votre taux de satisfaction.')|">
+                            <i class="bi bi-x-circle me-2"></i>Annuler la réservation
+                        </button>
+                    </form>
+                    <button class="btn btn-outline-primary btn-lg px-4" onclick="window.print()">
+                        <i class="bi bi-printer me-2"></i>Imprimer la facture
+                    </button>
+                </div>
+                
+                <div class="d-flex justify-content-center gap-3 action-buttons" th:unless="${reservation.statut == 'EN_ATTENTE' or reservation.statut == 'CONFIRMEE'}">
+                    <a th:href="@{/partenaire/reservations}" class="btn btn-primary btn-lg px-4">
+                        <i class="bi bi-arrow-left me-2"></i>Retour à la liste
+                    </a>
+                    <button class="btn btn-outline-primary btn-lg px-4" onclick="window.print()">
+                        <i class="bi bi-printer me-2"></i>Imprimer la facture
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

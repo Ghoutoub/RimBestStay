@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="reservation-card(reservation)" class="card mb-3">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <h6 th:text="${reservation.reference}"></h6>
+                <span th:classappend="${reservation.statut == 'CONFIRMEE'} ? 'badge bg-success' :
+                                      ${reservation.statut == 'EN_ATTENTE'} ? 'badge bg-warning' :
+                                      ${reservation.statut == 'ANNULEE'} ? 'badge bg-danger' :
+                                      'badge bg-secondary'"
+                      th:text="${reservation.statut}"></span>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted">Hôtel</small><br>
+                <strong th:text="${reservation.hotelNom}"></strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted">Dates</small><br>
+                <span th:text="${#temporals.format(reservation.dateArrivee, 'dd/MM/yyyy')}"></span> - 
+                <span th:text="${#temporals.format(reservation.dateDepart, 'dd/MM/yyyy')}"></span>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted">Montant</small><br>
+                <strong th:text="${#numbers.formatDecimal(reservation.prixTotal, 1, 2, 'POINT') + ' MRU'}"></strong>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-12 text-end">
+                <a th:href="@{/reservations/client/details/{id}(id=${reservation.id})}" 
+                   class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-eye"></i> Détails
+                </a>
+                <a th:if="${reservation.statut == 'EN_ATTENTE'}" 
+                   th:href="@{/paiements/reservation/{id}(id=${reservation.id})}" 
+                   class="btn btn-sm btn-success">
+                    <i class="bi bi-credit-card"></i> Payer
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

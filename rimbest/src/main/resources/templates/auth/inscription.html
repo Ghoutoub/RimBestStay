@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Inscription - RIMBestStay</title>
+
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white text-center">
+                        <h4 class="mb-0"><i class="bi bi-person-plus"></i> Inscription Client</h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/inscription}" th:object="${client}" method="post">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="nom" class="form-label">Nom complet</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                        <input type="text" class="form-control" id="nom" th:field="*{nom}" 
+                                               placeholder="Votre nom" required>
+                                    </div>
+                                    <div th:if="${#fields.hasErrors('nom')}" class="text-danger">
+                                        <small th:errors="*{nom}"></small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                        <input type="email" class="form-control" id="email" th:field="*{email}" 
+                                               placeholder="votre@email.com" required>
+                                    </div>
+                                    <div th:if="${#fields.hasErrors('email')}" class="text-danger">
+                                        <small th:errors="*{email}"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="motDePasse" class="form-label">Mot de passe</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                        <input type="password" class="form-control" id="motDePasse" 
+                                               th:field="*{motDePasse}" placeholder="Minimum 6 caractères" required>
+                                    </div>
+                                    <div th:if="${#fields.hasErrors('motDePasse')}" class="text-danger">
+                                        <small th:errors="*{motDePasse}"></small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="telephone" class="form-label">Téléphone</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                                        <input type="tel" class="form-control" id="telephone" th:field="*{telephone}" 
+                                               placeholder="Votre numéro">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="adresse" class="form-label">Adresse</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                    <textarea class="form-control" id="adresse" th:field="*{adresse}" 
+                                              rows="2" placeholder="Votre adresse complète"></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="conditions" required>
+                                <label class="form-check-label" for="conditions">
+                                    J'accepte les <a href="#" class="text-decoration-none">conditions d'utilisation</a>
+                                </label>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle"></i> S'inscrire
+                                </button>
+                            </div>
+                        </form>
+                        <hr>
+                        <div class="text-center">
+                            <p class="mb-2">Déjà inscrit?</p>
+                            <a th:href="@{/login}" class="btn btn-outline-primary">
+                                <i class="bi bi-box-arrow-in-right"></i> Se connecter
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

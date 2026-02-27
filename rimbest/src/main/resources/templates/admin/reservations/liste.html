@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/base}">
+
+<head>
+    <title>Gestion des réservations - Admin</title>
+    <style>
+        /* .btn-xsm {
+            padding: .125rem .25rem;
+            font-size: .75rem;
+            border-radius: .2rem;
+            line-height: 1.2;
+        } */
+        .stats-card {
+            border-radius: 10px;
+            transition: transform 0.2s;
+            border: none;
+        }
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .card-subtitle {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+        .card-title {
+            font-weight: 700;
+        }
+        .opacity-50 {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Gestion des réservations</h1>
+                <div>
+                    <a th:href="@{/dashboard}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left me-1"></i>Retour au dashboard
+                    </a>
+                </div>
+
+            </div>
+            <!-- Statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card stats-card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-subtitle mb-1">Total</h6>
+                                    <h3 class="card-title mb-0" th:text="${totalItems}">0</h3>
+                                </div>
+                                <i class="bi bi-calendar-event display-6 opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card bg-warning">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-subtitle mb-1">En attente</h6>
+                                    <h3 class="card-title mb-0" th:text="${pendingCount}">0</h3>
+                                </div>
+                                <i class="bi bi-clock display-6 opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-subtitle mb-1">Confirmées</h6>
+                                    <h3 class="card-title mb-0" th:text="${confirmedCount}">0</h3>
+                                </div>
+                                <i class="bi bi-check-circle display-6 opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card bg-danger text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-subtitle mb-1">Annulées</h6>
+                                    <h3 class="card-title mb-0" th:text="${cancelledCount}">0</h3>
+                                </div>
+                                <i class="bi bi-x-circle display-6 opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtres -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form th:action="@{/reservations/admin}" method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="search" class="form-label">Recherche</label>
+                            <input type="text" id="search" name="search" class="form-control"
+                                placeholder="Référence, client, hôtel..." th:value="${param.search}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="statut" class="form-label">Statut</label>
+                            <select id="statut" name="statut" class="form-select">
+                                <option value="">Tous</option>
+                                <option th:each="statut : ${T(com.Rimbest.rimbest.model.StatutReservation).values()}"
+                                    th:value="${statut}" th:text="${statut}"
+                                    th:selected="${param.statut != null && param.statut.equals(statut)}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="dateFrom" class="form-label">Du</label>
+                            <input type="date" id="dateFrom" name="dateFrom" class="form-control"
+                                th:value="${param.dateFrom}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="dateTo" class="form-label">Au</label>
+                            <input type="date" id="dateTo" name="dateTo" class="form-control"
+                                th:value="${param.dateTo}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Liste des réservations -->
+            <div class="card">
+                <div class="card-body">
+                    <div th:if="${totalItems == 0}" class="text-center py-5">
+                        <i class="bi bi-calendar-x" style="font-size: 3rem; color: #ccc;"></i>
+                        <h5 class="mt-3">Aucune réservation trouvée</h5>
+                    </div>
+
+                    <div th:if="${totalItems > 0}">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Référence</th>
+                                        <th>Client</th>
+                                        <th>Hôtel</th>
+                                        <th>Dates</th>
+                                        <th>Montant</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="reservation : ${reservations}">
+                                        <td th:text="${reservation.reference}"></td>
+                                        <td>
+                                            <div th:text="${reservation.clientNom}"></div>
+                                            <small th:text="${reservation.clientEmail}"></small>
+                                        </td>
+                                        <td th:text="${reservation.hotelNom}"></td>
+                                        <td
+                                            th:text="'Ch. ' + ${reservation.chambreNumero} + ' (' + ${reservation.chambreType} + ')'">
+                                        </td>
+                                        <td th:text="${reservation.dateArrivee} + ' - ' + ${reservation.dateDepart}">
+                                        </td>
+                                        <td th:text="${reservation.nombrePersonnes}"></td>
+                                        <td th:text="${reservation.prixTotal} + ' MRU'"></td>
+                                        <td th:text="${reservation.statut}"></td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <!-- Voir détails (toujours visible) -->
+                                                <a class="btn btn-sm btn-primary text-white"
+                                                    th:href="@{/reservations/admin/details/{id}(id=${reservation.id})}">
+                                                    <i class="bi bi-eye"></i> Voir
+                                                </a>
+
+                                                <!-- Confirmer (uniquement si EN_ATTENTE) -->
+                                                <form
+                                                    th:if="${reservation.statut == T(com.Rimbest.rimbest.model.StatutReservation).EN_ATTENTE}"
+                                                    th:action="@{/reservations/admin/confirmer/{id}(id=${reservation.id})}"
+                                                    method="post" style="display: inline;">
+                                                    <button type="submit" class="btn btn-sm btn-success"
+                                                        onclick="return confirm('Confirmer cette réservation ?')">
+                                                        <i class="bi bi-check-circle"></i> Confirmer
+                                                    </button>
+                                                </form>
+
+                                                <!-- Refuser (uniquement si EN_ATTENTE ou CONFIRMEE) -->
+                                                <form
+                                                    th:if="${reservation.statut != T(com.Rimbest.rimbest.model.StatutReservation).ANNULEE}"
+                                                    th:action="@{/reservations/admin/refuser/{id}(id=${reservation.id})}"
+                                                    method="post" style="display: inline;">
+                                                    <input type="hidden" name="raison"
+                                                        value="Refusé par le partenaire" />
+                                                    <button type="submit" class="btn btn-sm btn-danger"
+                                                        onclick="return confirm('Refuser cette réservation ?')">
+                                                        <i class="bi bi-x-circle"></i> Refuser
+                                                    </button>
+                                                </form>
+
+                                                <!-- Annuler (uniquement si CONFIRMEE) -->
+                                                <form
+                                                    th:if="${reservation.statut == T(com.Rimbest.rimbest.model.StatutReservation).CONFIRMEE}"
+                                                    th:action="@{/reservations/admin/annuler/{id}(id=${reservation.id})}"
+                                                    method="post" style="display: inline;">
+                                                    <button type="submit" class="btn btn-sm btn-warning"
+                                                        onclick="return confirm('Annuler cette réservation ?')">
+                                                        <i class="bi bi-x-lg"></i> Annuler
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(reservations)}">
+                                        <td colspan="9">Aucune réservation trouvée</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div th:if="${totalPages > 1}" class="d-flex justify-content-center mt-4">
+                            <nav>
+                                <ul class="pagination">
+                                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                                        <a class="page-link"
+                                            th:href="@{/reservations/admin(page=${currentPage - 1}, size=${pageSize}, search=${param.search}, statut=${param.statut}, dateFrom=${param.dateFrom}, dateTo=${param.dateTo})}">
+                                            Précédent
+                                        </a>
+                                    </li>
+                                    <li th:each="page : ${#numbers.sequence(0, totalPages - 1)}" class="page-item"
+                                        th:classappend="${currentPage == page} ? 'active'">
+                                        <a class="page-link"
+                                            th:href="@{/reservations/admin(page=${page}, size=${pageSize}, search=${param.search}, statut=${param.statut}, dateFrom=${param.dateFrom}, dateTo=${param.dateTo})}"
+                                            th:text="${page + 1}"></a>
+                                    </li>
+                                    <li class="page-item"
+                                        th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                                        <a class="page-link"
+                                            th:href="@{/reservations/admin(page=${currentPage + 1}, size=${pageSize}, search=${param.search}, statut=${param.statut}, dateFrom=${param.dateFrom}, dateTo=${param.dateTo})}">
+                                            Suivant
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

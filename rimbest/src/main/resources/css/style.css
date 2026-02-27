@@ -1,0 +1,260 @@
+/* style.css - RIMBestStay */
+
+/* Variables CSS */
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+}
+
+/* Styles généraux */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Navigation */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.navbar-brand i {
+    color: var(--warning-color);
+}
+
+/* Cartes */
+.card {
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    font-weight: 600;
+}
+
+/* Boutons */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-lg {
+    padding: 0.75rem 2rem;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #0a58ca 100%);
+    border-radius: 15px;
+    margin-top: 1rem;
+}
+
+/* Features */
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(13, 110, 253, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+/* Badges */
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.8em;
+}
+
+.badge-pill {
+    border-radius: 50rem;
+}
+
+/* Tableaux */
+.table th {
+    font-weight: 600;
+    color: var(--dark-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Alertes */
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+.alert i {
+    font-size: 1.2rem;
+    vertical-align: middle;
+}
+
+/* Dashboard cards */
+.dashboard-card {
+    border-left: 4px solid transparent;
+}
+
+.dashboard-card-primary {
+    border-left-color: var(--primary-color);
+}
+
+.dashboard-card-success {
+    border-left-color: var(--success-color);
+}
+
+.dashboard-card-warning {
+    border-left-color: var(--warning-color);
+}
+
+.dashboard-card-danger {
+    border-left-color: var(--danger-color);
+}
+
+/* Forms */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 0.75rem 1rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+    background-color: var(--dark-color);
+}
+
+footer h5 {
+    color: var(--warning-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 2rem;
+    }
+    
+    .hero-section {
+        text-align: center;
+        padding: 2rem 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #0a58ca;
+}
+
+/* Loading spinner */
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.spinner {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Status indicators */
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-active {
+    background-color: var(--success-color);
+}
+
+.status-inactive {
+    background-color: var(--danger-color);
+}
+
+.status-pending {
+    background-color: var(--warning-color);
+}
+
+/* Utility classes */
+.text-shadow {
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+
+.box-shadow {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.rounded-lg {
+    border-radius: 15px;
+}
+
+.rounded-xl {
+    border-radius: 20px;
+}

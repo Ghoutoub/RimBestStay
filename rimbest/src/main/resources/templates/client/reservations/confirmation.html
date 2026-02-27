@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Confirmation de Réservation - RIMBestStay</title>
+    <style>
+        .confirmation-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 40px 0;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .confirmation-icon {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: #28a745;
+            margin: 0 auto 20px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container py-4">
+            <!-- En-tête de confirmation -->
+            <div class="confirmation-header text-center">
+                <div class="confirmation-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <h1 class="display-5 fw-bold">Réservation confirmée !</h1>
+                <p class="lead">Votre réservation a été créée avec succès</p>
+                <h3 class="mb-0">Référence: <span th:text="${reservation.reference}" class="badge bg-light text-dark fs-4"></span></h3>
+            </div>
+
+            <div class="row">
+                <!-- Détails de la réservation -->
+                <div class="col-lg-8 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-receipt me-2"></i>Détails de votre réservation
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <h6>Dates du séjour</h6>
+                                    <p class="mb-0">
+                                        <i class="bi bi-calendar-check text-primary me-2"></i>
+                                        <span th:text="${#dates.format(reservation.dateArrivee, 'dd/MM/yyyy')}"></span>
+                                        au 
+                                        <span th:text="${#dates.format(reservation.dateDepart, 'dd/MM/yyyy')}"></span>
+                                    </p>
+                                    <small class="text-muted">
+                                        <span th:text="${nombreNuits}"></span> nuit(s)
+                                    </small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <h6>Personnes</h6>
+                                    <p class="mb-0">
+                                        <i class="bi bi-people text-primary me-2"></i>
+                                        <span th:text="${reservation.nombrePersonnes}"></span> personne(s)
+                                    </p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <h6>Hôtel</h6>
+                                    <p class="mb-0">
+                                        <i class="bi bi-building text-primary me-2"></i>
+                                        <span th:text="${hotel.nom}"></span>
+                                    </p>
+                                    <small class="text-muted" th:text="${hotel.ville} + ', ' + ${hotel.pays}"></small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <h6>Chambre</h6>
+                                    <p class="mb-0">
+                                        <i class="bi bi-door-closed text-primary me-2"></i>
+                                        Chambre <span th:text="${chambre.numero}"></span>
+                                    </p>
+                                    <small class="text-muted" th:text="${chambre.typeChambre}"></small>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <!-- Instructions -->
+                            <div class="alert alert-info">
+                                <h6><i class="bi bi-info-circle me-2"></i>Instructions importantes</h6>
+                                <ul class="mb-0">
+                                    <li>Présentez cette référence à votre arrivée</li>
+                                    <li>Check-in à partir de 14h00</li>
+                                    <li>Check-out avant 12h00</li>
+                                    <li>Annulation gratuite 24h avant l'arrivée</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Paiement -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-credit-card me-2"></i>Paiement
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-warning">
+                                <h6><i class="bi bi-clock me-2"></i>Statut du paiement: <span class="badge bg-warning">EN ATTENTE</span></h6>
+                                <p class="mb-2">Votre réservation est en attente de paiement. Vous avez 24h pour compléter le paiement.</p>
+                                <a th:href="@{/paiements/reservation/{id}(id=${reservation.id})}" class="btn btn-primary">
+                                    <i class="bi bi-credit-card me-2"></i>Effectuer le paiement
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Récapitulatif et actions -->
+                <div class="col-lg-4">
+                    <!-- Montant total -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-cash-coin me-2"></i>Récapitulatif
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Prix total</span>
+                                <span class="fw-bold" th:text="${reservation.prixTotal} + ' MRU'"></span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Statut</span>
+                                <span class="badge bg-warning" th:text="${reservation.statut}"></span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Date de création</span>
+                                <span th:text="${#dates.format(reservationDate, 'dd/MM/yyyy HH:mm')}"></span>
+                            </div>
+                            <hr>
+                            <p class="text-muted small">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Les taxes sont incluses dans le prix total
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-lightning me-2"></i>Actions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/reservations/client}" class="btn btn-outline-primary">
+                                    <i class="bi bi-list-check me-2"></i>Mes réservations
+                                </a>
+                                <button onclick="window.print()" class="btn btn-outline-secondary">
+                                    <i class="bi bi-printer me-2"></i>Imprimer
+                                </button>
+                                <a th:href="@{/hotel/list}" class="btn btn-outline-success">
+                                    <i class="bi bi-search me-2"></i>Autre réservation
+                                </a>
+                                <a th:href="@{/dashboard}" class="btn btn-outline-info">
+                                    <i class="bi bi-house me-2"></i>Tableau de bord
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact -->
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h6><i class="bi bi-telephone me-2"></i>Besoin d'aide ?</h6>
+                            <p class="small mb-2">Notre équipe est disponible 24/7</p>
+                            <a href="tel:+212522123456" class="btn btn-sm btn-outline-primary w-100">
+                                <i class="bi bi-telephone-outbound me-2"></i>Appeler le support
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

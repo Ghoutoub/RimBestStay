@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Paiement</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Paiement de la réservation <span th:text="${reservation.reference}"></span></h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h6>Récapitulatif</h6>
+                                        <p>
+                                            <strong>Montant à payer :</strong> 
+                                            <span th:text="${#numbers.formatDecimal(reservation.prixTotal, 1, 2, 'POINT') + ' MRU'}"></span>
+                                            <br>
+                                            <strong>Hôtel :</strong> 
+                                            <span th:text="${reservation.hotelNom}"></span>
+                                            <br>
+                                            <strong>Dates :</strong> 
+                                            <span th:text="${#temporals.format(reservation.dateArrivee, 'dd/MM/yyyy')}"></span>
+                                            au
+                                            <span th:text="${#temporals.format(reservation.dateDepart, 'dd/MM/yyyy')}"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <form th:action="@{/paiements/process/{id}(id=${reservation.id})}" method="post">
+                                    <div class="mb-3">
+                                        <label class="form-label">Méthode de paiement</label>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" name="methode" id="carte" value="CARTE" checked>
+                                            <label class="form-check-label" for="carte">
+                                                <i class="bi bi-credit-card"></i> Carte bancaire
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" name="methode" id="virement" value="VIREMENT">
+                                            <label class="form-check-label" for="virement">
+                                                <i class="bi bi-bank"></i> Virement bancaire
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="methode" id="especes" value="ESPECES">
+                                            <label class="form-check-label" for="especes">
+                                                <i class="bi bi-cash"></i> Espèces (sur place)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="alert alert-warning">
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                        Après le paiement, votre réservation sera confirmée.
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-success btn-lg">
+                                            <i class="bi bi-credit-card"></i> Payer maintenant
+                                        </button>
+                                        <a th:href="@{/reservations/client/details/{id}(id=${reservation.id})}" class="btn btn-secondary">
+                                            Annuler
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Historique des paiements -->
+                        <div th:if="${not paiements.isEmpty()}" class="mt-4">
+                            <h6>Historique des paiements</h6>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Référence</th>
+                                        <th>Date</th>
+                                        <th>Méthode</th>
+                                        <th>Montant</th>
+                                        <th>Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="paiement : ${paiements}">
+                                        <td th:text="${paiement.reference}"></td>
+                                        <td th:text="${#temporals.format(paiement.datePaiement, 'dd/MM/yyyy HH:mm')}"></td>
+                                        <td th:text="${paiement.methodePaiement}"></td>
+                                        <td th:text="${#numbers.formatDecimal(paiement.montant, 1, 2, 'POINT') + ' MRU'}"></td>
+                                        <td>
+                                            <span th:classappend="${paiement.statut == 'VALIDE'} ? 'badge bg-success' :
+                                                                  ${paiement.statut == 'EN_ATTENTE'} ? 'badge bg-warning' :
+                                                                  'badge bg-danger'"
+                                                  th:text="${paiement.statut}"></span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-RimbestApplication<rimbest>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.Rimbest.rimbest.RimbestApplication",
+            "projectName": "rimbest",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

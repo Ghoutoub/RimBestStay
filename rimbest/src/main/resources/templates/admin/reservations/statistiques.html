@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Statistiques Réservations - Admin</title>
+    <style>
+        .stat-card {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        
+        .chart-container {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        
+        .filter-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+        
+        .progress-bar-animated {
+            animation: animate-positive 2s ease-in-out infinite;
+        }
+        
+        @keyframes animate-positive {
+            0% { background-position: 0 0; }
+            100% { background-position: 100% 0; }
+        }
+        
+        .comparison-card {
+            border-left: 4px solid #dc3545;
+        }
+        
+        .trend-up {
+            color: #28a745;
+        }
+        
+        .trend-down {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid mt-4">
+        
+        <!-- En-tête -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <nav aria-label="breadcrumb" class="mb-3">
+                    <ol class="breadcrumb bg-light rounded-3 p-3">
+                        <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}" class="text-decoration-none text-danger">
+                            <i class="bi bi-house-door"></i> Tableau de bord
+                        </a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/admin/reservations/dashboard}" class="text-decoration-none text-danger">
+                            Réservations
+                        </a></li>
+                        <li class="breadcrumb-item active fw-bold">Statistiques</li>
+                    </ol>
+                </nav>
+                <h1 class="display-6 text-danger fw-bold mb-2">
+                    <i class="bi bi-bar-chart-line me-2"></i>Statistiques des Réservations
+                </h1>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-info-circle me-1"></i>Analyse détaillée des tendances et performances
+                </p>
+            </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="card shadow-sm mb-4 filter-card">
+            <div class="card-header bg-white border-0 pb-0 pt-3">
+                <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Filtres de période</h5>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/reservations/stats}" method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="periode" class="form-label small fw-bold">Période</label>
+                        <select class="form-select" id="periode" name="periode">
+                            <option value="jour" th:selected="${selectedPeriode == 'jour'}">Aujourd'hui</option>
+                            <option value="semaine" th:selected="${selectedPeriode == 'semaine'}">Cette semaine</option>
+                            <option value="mois" th:selected="${selectedPeriode == 'mois'}">Ce mois-ci</option>
+                            <option value="annee" th:selected="${selectedPeriode == 'annee'}">Cette année</option>
+                            <option value="personnalise" th:selected="${selectedPeriode == 'personnalise'}">Personnalisée</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dateDebut" class="form-label small fw-bold">Date de début</label>
+                        <input type="date" class="form-control" id="dateDebut" name="dateDebut" th:value="${dateDebut}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dateFin" class="form-label small fw-bold">Date de fin</label>
+                        <input type="date" class="form-control" id="dateFin" name="dateFin" th:value="${dateFin}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="hotelId" class="form-label small fw-bold">Hôtel</label>
+                        <select class="form-select" id="hotelId" name="hotelId">
+                            <option value="">Tous les hôtels</option>
+                            <option th:each="hotel : ${hotels}" 
+                                    th:value="${hotel.id}" 
+                                    th:text="${hotel.nom}" 
+                                    th:selected="${selectedHotelId == hotel.id}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger flex-grow-1">
+                                <i class="bi bi-search me-2"></i>Appliquer les filtres
+                            </button>
+                            <a th:href="@{/admin/reservations/stats}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-clockwise"></i> Réinitialiser
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Statistiques principales -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card stat-card comparison-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-muted text-uppercase small mb-1">Total Réservations</h6>
+                                <h2 class="mb-0 fw-bold" th:text="${totalReservations ?: 0}">0</h2>
+                                <div class="d-flex align-items-center">
+                                    <span class="trend-up" th:if="${reservationsGrowth >= 0}">
+                                        <i class="bi bi-arrow-up"></i> 
+                                        <span th:text="${#numbers.formatDecimal(reservationsGrowth, 1, 2)} + '%'">0.00%</span>
+                                    </span>
+                                    <span class="trend-down" th:unless="${reservationsGrowth >= 0}">
+                                        <i class="bi bi-arrow-down"></i> 
+                                        <span th:text="${#numbers.formatDecimal(reservationsGrowth, 1, 2)} + '%'">0.00%</span>
+                                    </span>
+                                    <small class="text-muted ms-2">vs période précédente</small>
+                                </div>
+                            </div>
+                            <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                                <i class="bi bi-calendar fs-1 text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card stat-card comparison-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-muted text-uppercase small mb-1">Revenus Totaux</h6>
+                                <h2 class="mb-0 fw-bold" th:text="${#numbers.formatCurrency(totalRevenue ?: 0)}">€0.00</h2>
+                                <div class="d-flex align-items-center">
+                                    <span class="trend-up" th:if="${revenueGrowth >= 0}">
+                                        <i class="bi bi-arrow-up"></i> 
+                                        <span th:text="${#numbers.formatDecimal(revenueGrowth, 1, 2)} + '%'">0.00%</span>
+                                    </span>
+                                    <span class="trend-down" th:unless="${revenueGrowth >= 0}">
+                                        <i class="bi bi-arrow-down"></i> 
+                                        <span th:text="${#numbers.formatDecimal(revenueGrowth, 1, 2)} + '%'">0.00%</span>
+                                    </span>
+                                    <small class="text-muted ms-2">vs période précédente</small>
+                                </div>
+                            </div>
+                            <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                                <i class="bi bi-currency-euro fs-1 text-success"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card stat-card comparison-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-muted text-uppercase small mb-1">Taux de Conversion</h6>
+                                <h2 class="mb-0 fw-bold" th:text="${conversionRate ?: 0} + '%'">0%</h2>
+                                <div class="d-flex align-items-center">
+                                    <span class="trend-up" th:if="${conversionGrowth >= 0}">
+                                        <i class="bi bi-arrow-up"></i> 
+                                        <span th:text="${#numbers.formatDecimal(conversionGrowth, 1, 2)} + '%'">0.00%</span>
+                                    </span>
+                                    <span class="trend-down" th:unless="${conversionGrowth >= 0}">
+                                        <i class="bi bi-arrow-down"></i> 
+                                        <span th:text="${#numbers.formatDecimal(conversionGrowth, 1, 2)} + '%'">0.00%</span>
+                                    </span>
+                                    <small class="text-muted ms-2">vs période précédente</small>
+                                </div>
+                            </div>
+                            <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                                <i class="bi bi-percent fs-1 text-warning"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card stat-card comparison-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-muted text-uppercase small mb-1">Taux d'Annulation</h6>
+                                <h2 class="mb-0 fw-bold" th:text="${cancellationRate ?: 0} + '%'">0%</h2>
+                                <div class="d-flex align-items-center">
+                                    <span class="trend-down" th:if="${cancellationGrowth <= 0}">
+                                        <i class="bi bi-arrow-down"></i> 
+                                        <span th:text="${#numbers.formatDecimal(cancellationGrowth, 1, 2)} + '%'">0.00%</span>
+                                    </span>
+                                    <span class="trend-up" th:unless="${cancellationGrowth <= 0}">
+                                        <i class="bi bi-arrow-up"></i> 
+                                        <span th:text="${#numbers.formatDecimal(cancellationGrowth, 1, 2)} + '%'">0.00%</span>
+                                    </span>
+                                    <small class="text-muted ms-2">vs période précédente</small>
+                                </div>
+                            </div>
+                            <div class="bg-danger bg-opacity-10 p-3 rounded-circle">
+                                <i class="bi bi-x-circle fs-1 text-danger"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphiques -->
+        <div class="row mb-4">
+            <div class="col-xl-8 col-md-12 mb-4">
+                <div class="card chart-container">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-graph me-2"></i>Évolution des Réservations et Revenus
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Placeholder pour le graphique - à implémenter avec Chart.js -->
+                        <div class="text-center p-5">
+                            <i class="bi bi-graph fs-1 text-muted mb-3"></i>
+                            <h5 class="text-muted">Graphique d'évolution</h5>
+                            <p class="text-muted">Affichage de l'évolution des réservations et des revenus au cours de la période sélectionnée</p>
+                            <!-- Graphique à implémenter avec Chart.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-4 col-md-12 mb-4">
+                <div class="card chart-container">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-pie-chart me-2"></i>Répartition par Statut
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Placeholder pour le graphique circulaire - à implémenter avec Chart.js -->
+                        <div class="text-center p-5">
+                            <i class="bi bi-pie-chart fs-1 text-muted mb-3"></i>
+                            <h5 class="text-muted">Répartition des réservations</h5>
+                            <p class="text-muted">Par statut de réservation</p>
+                            <!-- Graphique à implémenter avec Chart.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-xl-6 col-md-12 mb-4">
+                <div class="card chart-container">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-bar-chart me-2"></i>Répartition par Mois
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Placeholder pour le graphique - à implémenter avec Chart.js -->
+                        <div class="text-center p-5">
+                            <i class="bi bi-bar-chart fs-1 text-muted mb-3"></i>
+                            <h5 class="text-muted">Réservations par mois</h5>
+                            <p class="text-muted">Distribution des réservations sur les mois de l'année</p>
+                            <!-- Graphique à implémenter avec Chart.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-6 col-md-12 mb-4">
+                <div class="card chart-container">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-map me-2"></i>Top Hôtels
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Hôtel</th>
+                                        <th>Réservations</th>
+                                        <th>Revenus</th>
+                                        <th>Taux Remplissage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${topHotels == null or #lists.isEmpty(topHotels)}">
+                                        <td colspan="4" class="text-center py-4">
+                                            <i class="bi bi-building fs-1 text-muted mb-2"></i>
+                                            <p class="text-muted mb-0">Aucune donnée disponible</p>
+                                        </td>
+                                    </tr>
+                                    <tr th:each="hotelStat : ${topHotels}" 
+                                        th:if="${topHotels != null and not #lists.isEmpty(topHotels)}">
+                                        <td>
+                                            <div th:text="${hotelStat.hotel.nom}">Hôtel Exemple</div>
+                                            <small class="text-muted" th:text="${hotelStat.hotel.adresse}">Adresse de l'hôtel</small>
+                                        </td>
+                                        <td th:text="${hotelStat.reservationCount}">0</td>
+                                        <td th:text="${#numbers.formatCurrency(hotelStat.totalRevenue)}">€0.00</td>
+                                        <td>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar bg-success" role="progressbar" 
+                                                     th:style="'width: ' + ${hotelStat.fillRate} + '%'" 
+                                                     th:aria-valuenow="${hotelStat.fillRate}" 
+                                                     aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <small th:text="${hotelStat.fillRate} + '%'">0%</small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques supplémentaires -->
+        <div class="row">
+            <div class="col-xl-4 col-md-12 mb-4">
+                <div class="card chart-container">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-people me-2"></i>Top Clients
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Client</th>
+                                        <th>Réservations</th>
+                                        <th>Dépenses</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${topClients == null or #lists.isEmpty(topClients)}">
+                                        <td colspan="3" class="text-center py-4">
+                                            <i class="bi bi-people fs-1 text-muted mb-2"></i>
+                                            <p class="text-muted mb-0">Aucune donnée disponible</p>
+                                        </td>
+                                    </tr>
+                                    <tr th:each="clientStat : ${topClients}" 
+                                        th:if="${topClients != null and not #lists.isEmpty(topClients)}">
+                                        <td>
+                                            <div th:text="${clientStat.client.nom}">Client Exemple</div>
+                                            <small class="text-muted" th:text="${clientStat.client.email}">client@example.com</small>
+                                        </td>
+                                        <td th:text="${clientStat.reservationCount}">0</td>
+                                        <td th:text="${#numbers.formatCurrency(clientStat.totalSpent)}">€0.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-4 col-md-12 mb-4">
+                <div class="card chart-container">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-door-open me-2"></i>Types de Chambres
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Réservations</th>
+                                        <th>Revenus</th>
+                                        <th>%</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${roomTypeStats == null or #lists.isEmpty(roomTypeStats)}">
+                                        <td colspan="4" class="text-center py-4">
+                                            <i class="bi bi-door-open fs-1 text-muted mb-2"></i>
+                                            <p class="text-muted mb-0">Aucune donnée disponible</p>
+                                        </td>
+                                    </tr>
+                                    <tr th:each="roomStat : ${roomTypeStats}" 
+                                        th:if="${roomTypeStats != null and not #lists.isEmpty(roomTypeStats)}">
+                                        <td th:text="${roomStat.roomType}">Standard</td>
+                                        <td th:text="${roomStat.count}">0</td>
+                                        <td th:text="${#numbers.formatCurrency(roomStat.revenue)}">€0.00</td>
+                                        <td>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar bg-info" role="progressbar" 
+                                                     th:style="'width: ' + ${roomStat.percentage} + '%'" 
+                                                     th:aria-valuenow="${roomStat.percentage}" 
+                                                     aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <small th:text="${roomStat.percentage} + '%'">0%</small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-4 col-md-12 mb-4">
+                <div class="card chart-container">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-calendar-check me-2"></i>Satisfaction Moyenne
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="display-2 text-warning mb-3">4.7</div>
+                        <div class="mb-3">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-half text-warning"></i>
+                        </div>
+                        <p class="text-muted mb-0">Basé sur 1,248 avis</p>
+                        
+                        <div class="mt-4">
+                            <h6 class="mb-3">Répartition des notes</h6>
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span>5 étoiles</span>
+                                <div class="progress flex-grow-1 mx-2" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 65%"></div>
+                                </div>
+                                <span>65%</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span>4 étoiles</span>
+                                <div class="progress flex-grow-1 mx-2" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 25%"></div>
+                                </div>
+                                <span>25%</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span>3 étoiles</span>
+                                <div class="progress flex-grow-1 mx-2" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 7%"></div>
+                                </div>
+                                <span>7%</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span>2 étoiles</span>
+                                <div class="progress flex-grow-1 mx-2" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 2%"></div>
+                                </div>
+                                <span>2%</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span>1 étoile</span>
+                                <div class="progress flex-grow-1 mx-2" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 1%"></div>
+                                </div>
+                                <span>1%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

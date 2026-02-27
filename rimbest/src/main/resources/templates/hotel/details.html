@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layouts/base}">
+
+<head>
+    <title th:text="${hotel.nom} + ' - RIMBestStay'">Détails Hôtel</title>
+    <style>
+        .hotel-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+        }
+
+        .amenity-icon {
+            width: 50px;
+            height: 50px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .room-card {
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .room-card:hover {
+            transform: translateY(-5px);
+            border-color: #0d6efd;
+        }
+
+        .carousel-item img {
+            height: 400px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <!-- En-tête avec image -->
+        <div class="hotel-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="display-5 fw-bold mb-3" th:text="${hotel.nom}">Nom Hôtel</h1>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="star-rating me-3">
+                                <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                    <i th:class="${i <= hotel.etoiles ? 'bi bi-star-fill' : 'bi bi-star'}"
+                                        class="${i <= hotel.etoiles ? 'text-warning' : 'text-white-50'}"></i>
+                                </span>
+                            </div>
+                            <span class="badge bg-light text-dark me-2" th:text="${hotel.etoiles} + ' étoiles'"></span>
+                            <span class="badge bg-success me-2">
+                                <i class="bi bi-check-circle me-1"></i>
+                                <span th:text="${hotel.actif ? 'Actif' : 'Inactif'}"></span>
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-geo-alt me-2"></i>
+                            <span th:text="${hotel.ville} + ', ' + ${hotel.pays}"></span>
+                            <i class="bi bi-dot"></i>
+                            <i class="bi bi-telephone me-2"></i>
+                            <span th:text="${hotel.telephone}"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div sec:authorize="hasRole('ADMIN') or hasRole('PARTENAIRE')" class="btn-group">
+                            <a th:href="@{/hotel/edit/{id}(id=${hotel.id})}" class="btn btn-light me-2">
+                                <i class="bi bi-pencil"></i> Modifier
+                            </a>
+                            <a th:href="@{/hotel/list}" class="btn btn-outline-light">
+                                <i class="bi bi-arrow-left"></i> Retour
+                            </a>
+                        </div>
+                        <div sec:authorize="hasRole('CLIENT')">
+                            <a th:href="@{/chambre/list/{hotelId}(hotelId=${hotel.id})}" class="btn btn-warning btn-lg">
+                                <i class="bi bi-search me-2"></i> Voir les chambres
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Navigation secondaire -->
+            <nav class="mb-4">
+                <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                    <button class="nav-link active" id="nav-overview-tab" data-bs-toggle="tab"
+                        data-bs-target="#nav-overview" type="button">
+                        <i class="bi bi-info-circle me-2"></i>Vue d'ensemble
+                    </button>
+                    <button class="nav-link" id="nav-rooms-tab" data-bs-toggle="tab" data-bs-target="#nav-rooms"
+                        type="button">
+                        <i class="bi bi-door-closed me-2"></i>Chambres
+                        <span class="badge bg-primary ms-1" th:text="${#lists.size(hotel.chambres)}">0</span>
+                    </button>
+                    <button class="nav-link" id="nav-services-tab" data-bs-toggle="tab" data-bs-target="#nav-services"
+                        type="button">
+                        <i class="bi bi-star me-2"></i>Services
+                    </button>
+                    <button class="nav-link" id="nav-reviews-tab" data-bs-toggle="tab" data-bs-target="#nav-reviews"
+                        type="button">
+                        <i class="bi bi-chat-left-text me-2"></i>Avis
+                        <span class="badge bg-success ms-1">4.2</span>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Contenu des onglets -->
+            <div class="tab-content" id="nav-tabContent">
+                <!-- Onglet Vue d'ensemble -->
+                <div class="tab-pane fade show active" id="nav-overview" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <!-- Description -->
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-card-text text-primary me-2"></i>Description
+                                    </h5>
+                                    <p class="card-text"
+                                        th:text="${hotel.description} ?: 'Aucune description disponible.'">
+                                        Description de l'hôtel...
+                                    </p>
+                                    <div class="row mt-4">
+                                        <div class="col-md-6">
+                                            <h6>Adresse complète</h6>
+                                            <p class="text-muted" th:text="${hotel.adresse} ?: 'Non spécifiée'"></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Contact</h6>
+                                            <p class="mb-1">
+                                                <i class="bi bi-telephone text-secondary me-2"></i>
+                                                <span th:text="${hotel.telephone}"></span>
+                                            </p>
+                                            <p class="mb-0">
+                                                <i class="bi bi-envelope text-secondary me-2"></i>
+                                                <span th:text="${hotel.email}"></span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Photos -->
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-images text-primary me-2"></i>Photos
+                                    </h5>
+                                    <div th:if="${hotel.allImageUrls != null and !hotel.allImageUrls.isEmpty()}" id="hotelCarousel" class="carousel slide" data-bs-ride="carousel">
+                                        <div class="carousel-indicators">
+                                            <button th:each="image, iterStat : ${hotel.allImageUrls}"
+                                                    type="button" 
+                                                    data-bs-target="#hotelCarousel" 
+                                                    th:data-bs-slide-to="${iterStat.index}"
+                                                    th:class="${iterStat.first} ? 'active' : ''" 
+                                                    th:aria-current="${iterStat.first} ? 'true' : null"
+                                                    th:aria-label="'Slide ' + ${iterStat.index + 1}"></button>
+                                        </div>
+                                        <div class="carousel-inner rounded">
+                                            <div th:each="image, iterStat : ${hotel.allImageUrls}" 
+                                                 th:class="${'carousel-item ' + (iterStat.first ? 'active' : '')}">
+                                                <img th:src="@{${image}}" class="d-block w-100" style="height: 400px; object-fit: cover;" alt="Photo hôtel">
+                                            </div>
+                                        </div>
+                                        <button class="carousel-control-prev" type="button"
+                                            data-bs-target="#hotelCarousel" data-bs-slide="prev">
+                                            <span class="carousel-control-prev-icon"></span>
+                                        </button>
+                                        <button class="carousel-control-next" type="button"
+                                            data-bs-target="#hotelCarousel" data-bs-slide="next">
+                                            <span class="carousel-control-next-icon"></span>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Message si aucune image -->
+                                    <div th:unless="${hotel.allImageUrls != null and !hotel.allImageUrls.isEmpty()}" class="text-center py-5">
+                                        <i class="bi bi-image text-muted display-1"></i>
+                                        <p class="text-muted mt-3">Aucune photo disponible pour cet hôtel</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar avec informations -->
+                        <div class="col-lg-4">
+                            <!-- Statut et actions -->
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-speedometer2 text-primary me-2"></i>Statistiques
+                                    </h5>
+                                    <div class="list-group list-group-flush">
+                                        <div class="list-group-item d-flex justify-content-between">
+                                            <span>Chambres totales</span>
+                                            <span class="badge bg-primary"
+                                                th:text="${#lists.size(hotel.chambres)}">0</span>
+                                        </div>
+                                        <div class="list-group-item d-flex justify-content-between">
+                                            <span>Taux d'occupation</span>
+                                            <span class="badge bg-success">85%</span>
+                                        </div>
+                                        <div class="list-group-item d-flex justify-content-between">
+                                            <span>Note moyenne</span>
+                                            <span class="badge bg-warning">4.2/5</span>
+                                        </div>
+                                        <div class="list-group-item d-flex justify-content-between">
+                                            <span>Statut</span>
+                                            <span th:if="${hotel.actif}" class="badge bg-success">Actif</span>
+                                            <span th:unless="${hotel.actif}" class="badge bg-danger">Inactif</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Actions rapides pour Admin -->
+                                    <div sec:authorize="hasRole('ADMIN') or hasRole('PARTENAIRE')" class="mt-3">
+                                        <div class="d-grid gap-2">
+                                            <a th:href="@{/hotel/edit/{id}(id=${hotel.id})}" class="btn btn-warning">
+                                                <i class="bi bi-pencil me-2"></i>Modifier
+                                            </a>
+                                            <a th:href="@{/chambre/list/{hotelId}(hotelId=${hotel.id})}"
+                                                class="btn btn-info">
+                                                <i class="bi bi-door-closed me-2"></i>Gérer les Chambres
+                                            </a>
+                                            <button class="btn btn-outline-danger"
+                                                th:onclick="'confirmDelete(' + ${hotel.id} + ')'">
+                                                <i class="bi bi-trash me-2"></i>Supprimer
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Actions pour Client -->
+                                    <div sec:authorize="hasRole('CLIENT')" class="mt-3">
+                                        <a th:href="@{/chambre/list/{hotelId}(hotelId=${hotel.id})}"
+                                            class="btn btn-primary w-100 mb-2">
+                                            <i class="bi bi-door-closed me-2"></i>Voir les chambres
+                                        </a>
+                                        <button class="btn btn-outline-primary w-100">
+                                            <i class="bi bi-heart me-2"></i>Ajouter aux Favoris
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Équipements -->
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-check-circle text-success me-2"></i>Équipements
+                                    </h5>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="amenity-icon mb-2">
+                                                <i class="bi bi-wifi text-primary"></i>
+                                            </div>
+                                            <small class="d-block">WiFi Gratuit</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="amenity-icon mb-2">
+                                                <i class="bi bi-cup-straw text-primary"></i>
+                                            </div>
+                                            <small class="d-block">Petit-déjeuner</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="amenity-icon mb-2">
+                                                <i class="bi bi-water text-primary"></i>
+                                            </div>
+                                            <small class="d-block">Piscine</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="amenity-icon mb-2">
+                                                <i class="bi bi-car-front text-primary"></i>
+                                            </div>
+                                            <small class="d-block">Parking</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Onglet Chambres -->
+                <div class="tab-pane fade" id="nav-rooms" role="tabpanel">
+                    <div class="row">
+                        <div class="col-12 mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5>Chambres Disponibles</h5>
+                                <div sec:authorize="hasRole('ADMIN') or hasRole('PARTENAIRE')">
+                                    <a th:href="@{/hotel/{id}/chambres/add(id=${hotel.id})}"
+                                        class="btn btn-primary btn-sm">
+                                        <i class="bi bi-plus-circle me-2"></i>Ajouter une Chambre
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Liste des chambres -->
+                        <div th:if="${not #lists.isEmpty(hotel.chambres)}" class="row g-4">
+                            <div th:each="chambre : ${hotel.chambres}" class="col-md-6 col-lg-4">
+                                <div class="card room-card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div>
+                                                <h6 class="card-title mb-1" th:text="${chambre.typeChambre}">Type</h6>
+                                                <small class="text-muted"
+                                                    th:text="'Chambre ' + ${chambre.numero}"></small>
+                                            </div>
+                                            <span class="badge bg-success"
+                                                th:text="${chambre.disponible ? 'Disponible' : 'Occupée'}"></span>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <i class="bi bi-people text-secondary me-2"></i>
+                                            <span th:text="${chambre.capacite} + ' personne(s)'"></span>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <i class="bi bi-tag text-secondary me-2"></i>
+                                            <span class="fw-bold" th:text="${chambre.prixNuit} + ' MAD/nuit'"></span>
+                                        </div>
+
+                                        <p class="card-text small text-muted"
+                                            th:text="${chambre.description} ?: 'Aucune description'"></p>
+
+                                        <div class="mt-auto">
+                                            <div sec:authorize="hasRole('CLIENT')" class="d-grid">
+                                                <a th:href="@{/chambre/details/{id}(id=${chambre.id})}"
+                                                    class="btn btn-outline-primary">
+                                                    <i class="bi bi-eye me-2"></i>Voir détails
+                                                </a>
+                                            </div>
+                                            <div sec:authorize="hasRole('ADMIN') or hasRole('PARTENAIRE')" class="btn-group w-100">
+                                                <a th:href="@{/chambre/edit/{id}(id=${chambre.id})}"
+                                                    class="btn btn-sm btn-outline-warning">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <button class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Aucune chambre -->
+                        <div th:if="${#lists.isEmpty(hotel.chambres)}" class="col-12 text-center py-5">
+                            <div class="text-muted">
+                                <i class="bi bi-door-closed display-1 opacity-25"></i>
+                                <h5 class="mt-3">Aucune chambre disponible</h5>
+                                <p>Ajoutez des chambres pour commencer à accepter des réservations</p>
+                                <a th:href="@{/hotel/{id}/chambres/add(id=${hotel.id})}" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle me-2"></i>Ajouter une Chambre
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Onglet Services -->
+                <div class="tab-pane fade" id="nav-services" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-check-circle text-success me-2"></i>Services inclus
+                                    </h5>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item">
+                                            <i class="bi bi-check text-success me-2"></i>
+                                            Petit-déjeuner buffet
+                                        </li>
+                                        <li class="list-group-item">
+                                            <i class="bi bi-check text-success me-2"></i>
+                                            WiFi haute vitesse
+                                        </li>
+                                        <li class="list-group-item">
+                                            <i class="bi bi-check text-success me-2"></i>
+                                            Service de chambre 24/7
+                                        </li>
+                                        <li class="list-group-item">
+                                            <i class="bi bi-check text-success me-2"></i>
+                                            Parking sécurisé gratuit
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-plus-circle text-primary me-2"></i>Services supplémentaires
+                                    </h5>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item">
+                                            <i class="bi bi-plus text-primary me-2"></i>
+                                            SPA et centre de bien-être
+                                        </li>
+                                        <li class="list-group-item">
+                                            <i class="bi bi-plus text-primary me-2"></i>
+                                            Location de voiture
+                                        </li>
+                                        <li class="list-group-item">
+                                            <i class="bi bi-plus text-primary me-2"></i>
+                                            Excursions touristiques
+                                        </li>
+                                        <li class="list-group-item">
+                                            <i class="bi bi-plus text-primary me-2"></i>
+                                            Salle de conférence
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Onglet Avis -->
+                <div class="tab-pane fade" id="nav-reviews" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h2 class="display-4 text-warning">4.2</h2>
+                                    <div class="star-rating mb-3">
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                        <i class="bi bi-star-half text-warning"></i>
+                                    </div>
+                                    <p class="text-muted">Note moyenne basée sur 124 avis</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <!-- Liste des avis -->
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-4">Derniers avis</h5>
+                                    <div class="review mb-4">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <div>
+                                                <strong>Ahmed Benani</strong>
+                                                <div class="star-rating">
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">25 Décembre 2025</small>
+                                        </div>
+                                        <p>Excellent séjour ! Personnel très accueillant, chambres propres et
+                                            confortables.</p>
+                                    </div>
+                                    <div class="review mb-4">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <div>
+                                                <strong>Fatima Zahra</strong>
+                                                <div class="star-rating">
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                    <i class="bi bi-star text-warning"></i>
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">20 Décembre 2025</small>
+                                        </div>
+                                        <p>Très bon rapport qualité-prix. Le petit-déjeuner était délicieux.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div layout:fragment="scripts">
+        <script>
+            // Confirmation de suppression
+            function confirmDelete(hotelId) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer cet hôtel ? Toutes les chambres et réservations associées seront également supprimées.')) {
+                    fetch('/hotel/delete/' + hotelId, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').getAttribute('content')
+                        }
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                window.location.href = '/hotel/list';
+                            } else {
+                                alert('Erreur lors de la suppression');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Erreur de connexion');
+                        });
+                }
+            }
+
+            // Initialiser le carousel
+            document.addEventListener('DOMContentLoaded', function () {
+                const hotelCarouselElement = document.getElementById('hotelCarousel');
+                if (hotelCarouselElement) {
+                    const carousel = new bootstrap.Carousel(hotelCarouselElement, {
+                        interval: 3000
+                    });
+                }
+            });
+        </script>
+    </div>
+</body>
+
+</html>
