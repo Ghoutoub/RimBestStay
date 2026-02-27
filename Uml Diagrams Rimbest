@@ -1,0 +1,1223 @@
+# 🏨 RimbestArch — Guide Expert UML Complet
+> **Stack:** Spring Boot 3 REST API · Angular 20 · MySQL · JWT Security  
+> **Domaine:** Réservation hôtelière multi-rôles (Client, Partenaire, Admin)
+
+---
+
+## 📌 Vue d'ensemble de l'architecture
+
+```
+Angular 20 (SPA)
+      │  HTTP/JWT (Bearer Token)
+      ▼
+Spring Boot REST API
+      │
+      ├── Security (Spring Security + JWT)
+      ├── Controllers (REST Endpoints)
+      ├── Services (Business Logic)
+      ├── Repositories (Spring Data JPA)
+      └── MySQL Database
+```
+
+---
+
+## 1️⃣  DIAGRAMME DE CAS D'UTILISATION
+
+### 🎭 Acteurs
+
+| Acteur | Description |
+|--------|-------------|
+| **Visiteur** | Utilisateur non authentifié |
+| **Client** | Utilisateur inscrit qui réserve des chambres |
+| **Partenaire** | Propriétaire d'hôtels, gère son catalogue |
+| **Administrateur** | Supervise tout le système |
+| **Système (Timer)** | Tâche schedulée qui expire les réservations |
+
+### 📋 Cas d'utilisation par acteur
+
+#### Visiteur (non connecté)
+- UC-01 : Consulter la liste des hôtels
+- UC-02 : Rechercher des hôtels (ville, dates, capacité)
+- UC-03 : Voir les détails d'un hôtel et de ses chambres
+- UC-04 : S'inscrire (en tant que Client **ou** Partenaire)
+- UC-05 : Se connecter
+
+#### Client (hérite de Visiteur)
+- UC-06 : Créer une réservation de chambre
+- UC-07 : Consulter ses réservations
+- UC-08 : Annuler une réservation *(EN_ATTENTE)*
+- UC-09 : Voir les détails d'une réservation (imprimer)
+- UC-10 : Gérer son profil (modifier, changer mot de passe)
+- UC-11 : Recevoir des notifications
+- UC-12 : Consulter son tableau de bord personnel
+
+#### Partenaire (hérite de Visiteur)
+- UC-13 : Ajouter / Modifier / Supprimer un hôtel
+- UC-14 : Gérer les chambres de ses hôtels (CRUD)
+- UC-15 : Modifier la disponibilité d'une chambre
+- UC-16 : Voir les réservations de ses hôtels
+- UC-17 : Changer le statut d'une réservation (CONFIRMER / ANNULER)
+- UC-18 : Créer une offre promotionnelle sur une chambre
+- UC-19 : Consulter les statistiques de ses hôtels (revenus, taux d'occupation)
+- UC-20 : Gérer son profil entreprise
+
+#### Administrateur (hérite de Visiteur + accès total)
+- UC-21 : Gérer tous les utilisateurs (liste, créer, modifier, activer/désactiver)
+- UC-22 : Gérer tous les hôtels (tous partenaires confondus)
+- UC-23 : Gérer toutes les réservations
+- UC-24 : Activer / Désactiver un hôtel
+- UC-25 : Voir les statistiques globales du système
+- UC-26 : Voir les statistiques par partenaire / par utilisateur
+
+#### Système (Scheduler)
+- UC-27 : Expirer automatiquement les réservations (`ReservationTaskService`)
+- UC-28 : Mettre à jour les chambres disponibles après fin de séjour
+- UC-29 : Envoyer des notifications automatiques aux clients/partenaires
+
+---
+
+### PlantUML — Diagramme de Cas d'Utilisation
+
+```plantuml
+@startuml RimbestArch_UseCases
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+
+actor "Visiteur" as V
+actor "Client" as C
+actor "Partenaire" as P
+actor "Administrateur" as A
+actor "Système (Scheduler)" as S
+
+C --|> V
+P --|> V
+A --|> V
+
+package "🔓 Accès Public" {
+  usecase "Voir liste hôtels\n(UC-01)" as UC01
+  usecase "Rechercher hôtels\n(UC-02)" as UC02
+  usecase "Voir détails hôtel/chambre\n(UC-03)" as UC03
+  usecase "S'inscrire\n(UC-04)" as UC04
+  usecase "Se connecter\n(UC-05)" as UC05
+}
+
+package "👤 Espace Client" {
+  usecase "Créer réservation\n(UC-06)" as UC06
+  usecase "Consulter réservations\n(UC-07)" as UC07
+  usecase "Annuler réservation\n(UC-08)" as UC08
+  usecase "Voir détails réservation\n(UC-09)" as UC09
+  usecase "Gérer profil\n(UC-10)" as UC10
+  usecase "Recevoir notifications\n(UC-11)" as UC11
+  usecase "Tableau de bord client\n(UC-12)" as UC12
+}
+
+package "🏨 Espace Partenaire" {
+  usecase "Gérer hôtels (CRUD)\n(UC-13)" as UC13
+  usecase "Gérer chambres\n(UC-14)" as UC14
+  usecase "Disponibilité chambre\n(UC-15)" as UC15
+  usecase "Voir réservations hôtel\n(UC-16)" as UC16
+  usecase "Changer statut réservation\n(UC-17)" as UC17
+  usecase "Offres promotionnelles\n(UC-18)" as UC18
+  usecase "Statistiques partenaire\n(UC-19)" as UC19
+}
+
+package "⚙️ Espace Admin" {
+  usecase "Gérer utilisateurs\n(UC-21)" as UC21
+  usecase "Gérer tous les hôtels\n(UC-22)" as UC22
+  usecase "Gérer toutes réservations\n(UC-23)" as UC23
+  usecase "Activer/Désactiver hôtel\n(UC-24)" as UC24
+  usecase "Statistiques globales\n(UC-25)" as UC25
+}
+
+package "🤖 Tâches Automatiques" {
+  usecase "Expirer réservations\n(UC-27)" as UC27
+  usecase "Libérer chambres\n(UC-28)" as UC28
+  usecase "Envoyer notifications\n(UC-29)" as UC29
+}
+
+V --> UC01
+V --> UC02
+V --> UC03
+V --> UC04
+V --> UC05
+
+C --> UC06
+C --> UC07
+C --> UC08
+C --> UC09
+C --> UC10
+C --> UC11
+C --> UC12
+
+P --> UC13
+P --> UC14
+P --> UC15
+P --> UC16
+P --> UC17
+P --> UC18
+P --> UC19
+
+A --> UC21
+A --> UC22
+A --> UC23
+A --> UC24
+A --> UC25
+
+S --> UC27
+S --> UC28
+S --> UC29
+
+UC06 ..> UC03 : <<include>>
+UC09 ..> UC07 : <<include>>
+UC17 ..> UC16 : <<include>>
+UC27 ..> UC29 : <<include>>
+UC28 ..> UC27 : <<include>>
+@enduml
+```
+
+---
+
+## 2️⃣  DIAGRAMME DE CLASSE
+
+### 🗂️ Entités et leurs attributs complets
+
+#### Hiérarchie d'héritage (`JOINED` strategy)
+
+```
+User (users)
+├── Client (clients)        — ROLE_CLIENT
+├── Partenaire (partenaires) — ROLE_PARTENAIRE
+└── Administrator (administrators) — ROLE_ADMIN
+```
+
+### PlantUML — Diagramme de Classe
+
+```plantuml
+@startuml RimbestArch_ClassDiagram
+skinparam classAttributeIconSize 0
+skinparam classFontSize 13
+skinparam classBackgroundColor #F8F9FA
+skinparam classBorderColor #495057
+skinparam packageBackgroundColor #E9ECEF
+skinparam arrowColor #343A40
+
+' ─────────────── ENUMERATIONS ───────────────
+enum StatutReservation {
+  EN_ATTENTE
+  CONFIRMEE
+  ANNULEE
+  TERMINEE
+  EXPIREE
+}
+
+enum StatutPaiement {
+  EN_ATTENTE
+  PAYE
+  REMBOURSE
+  ECHEC
+}
+
+enum ERole {
+  ROLE_CLIENT
+  ROLE_PARTENAIRE
+  ROLE_ADMIN
+}
+
+' ─────────────── CORE ENTITIES ───────────────
+package "Utilisateurs" {
+  abstract class User {
+    - id : Long
+    - nom : String
+    - email : String
+    - motDePasse : String
+    - telephone : String
+    - adresse : String
+    - actif : Boolean
+    - createdAt : Date
+    - updatedAt : Date
+    + getUserType() : String
+  }
+
+  class Client {
+    ' hérite tous les champs de User
+    ' Table: clients (PK = user_id)
+  }
+
+  class Partenaire {
+    - nomEntreprise : String
+    - siret : String
+    - adresseEntreprise : String
+    - telephonePro : String
+    - siteWeb : String
+    - description : String
+    - verified : Boolean
+    - commissionRate : Double
+  }
+
+  class Administrator {
+    ' hérite tous les champs de User
+    ' Table: administrators (PK = user_id)
+  }
+
+  class Role {
+    - id : Integer
+    - name : ERole
+  }
+}
+
+package "Hôtels & Chambres" {
+  class Hotel {
+    - id : Long
+    - nom : String
+    - ville : String
+    - pays : String
+    - quartier : String
+    - etoiles : Integer (1–5)
+    - description : String
+    - adresse : String
+    - telephone : String
+    - email : String
+    - equipementsHotel : String
+    - latitude : Double
+    - longitude : Double
+    - noteMoyenne : Double
+    - nombreAvis : Integer
+    - imagesUrls : String
+    - prixMinimumIndication : Double
+    - actif : Boolean
+    - createdAt : LocalDateTime
+    - updatedAt : LocalDateTime
+    + getNombreChambresDisponibles() : int
+    + getPrixMinimum() : Double
+  }
+
+  class Chambre {
+    - id : Long
+    - numero : String
+    - typeChambre : String
+    - capacite : Integer
+    - prixNuit : Double
+    - description : String
+    - superficie : Double
+    - equipementsChambre : String
+    - vueType : String
+    - nombreLits : Integer
+    - typeLits : String
+    - prixWeekend : Double
+    - taxeSejour : Double
+    - depotGarantie : Double
+    - imagesChambre : String
+    - salleBainPrivee : Boolean
+    - climatisation : Boolean
+    - television : Boolean
+    - wifi : Boolean
+    - minibar : Boolean
+    - coffreFort : Boolean
+    - disponible : Boolean
+    - statutNettoyage : String
+    - createdAt : LocalDateTime
+    - updatedAt : LocalDateTime
+    + getFirstImageUrl() : String
+  }
+}
+
+package "Réservations & Paiements" {
+  class Reservation {
+    - id : Long
+    - reference : String
+    - dateArrivee : LocalDate
+    - dateDepart : LocalDate
+    - nombrePersonnes : Integer
+    - statut : StatutReservation
+    - prixTotal : BigDecimal
+    - reduction : BigDecimal
+    - depotGarantie : BigDecimal
+    - modePaiement : String
+    - statutPaiement : StatutPaiement
+    - createdAt : Date
+    - updatedAt : Date
+  }
+
+  class Paiement {
+    - id : Long
+    - reference : String
+    - montant : BigDecimal
+    - methodePaiement : String
+    - statut : String
+    - datePaiement : LocalDateTime
+    - details : String
+  }
+
+  class OffrePromotionnelle {
+    - id : Long
+    - nomOffre : String
+    - dateDebut : LocalDate
+    - dateFin : LocalDate
+    - prixPromo : BigDecimal
+    - description : String
+  }
+}
+
+package "Notifications" {
+  class Notification {
+    - id : Long
+    - message : String
+    - read : Boolean
+    - createdAt : LocalDateTime
+    - type : NotificationType
+  }
+
+  enum NotificationType {
+    INFO
+    SUCCESS
+    WARNING
+    DANGER
+  }
+}
+
+' ─────────────── RELATIONS D'HÉRITAGE ───────────────
+User <|-- Client
+User <|-- Partenaire
+User <|-- Administrator
+
+' ─────────────── ASSOCIATIONS ───────────────
+User "1" *-- "0..*" Role : roles (ManyToMany)
+User "1" *-- "0..*" Notification : reçoit (ManyToOne)
+
+Partenaire "1" *-- "0..*" Hotel : possède (ManyToOne)
+Hotel "1" *-- "1..*" Chambre : contient (OneToMany)
+Chambre "1" *-- "0..*" Reservation : fait l'objet de (OneToMany)
+Chambre "1" *-- "0..*" OffrePromotionnelle : a (OneToMany)
+User "1" *-- "0..*" Reservation : effectue (ManyToOne)
+Reservation "1" *-- "0..*" Paiement : génère (OneToMany)
+
+' ─────────────── ENUM USAGE ───────────────
+Reservation --> StatutReservation
+Reservation --> StatutPaiement
+Role --> ERole
+Notification --> NotificationType
+@enduml
+```
+
+---
+
+## 3️⃣  DIAGRAMMES DE SÉQUENCE
+
+Neuf scénarios couvrant l'ensemble des flux métier de l'application.
+
+---
+
+### 📌 Séquence 1 — Authentification JWT (Login)
+
+**Acteurs :** Client/Partner/Admin → Angular → Spring Boot → MySQL
+
+```plantuml
+@startuml Sequence_Login
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor "Utilisateur" as U
+participant "Angular\nLoginComponent" as FE
+participant "AuthService\n(Angular)" as AS
+participant "AuthRestController\n(Spring)" as BE
+participant "UserDetailsServiceImpl" as UDS
+participant "JwtUtils" as JWT
+database "MySQL" as DB
+
+U -> FE : Saisir email + motDePasse
+FE -> AS : login(credentials)
+AS -> BE : POST /api/auth/login\n{email, motDePasse}
+BE -> UDS : loadUserByUsername(email)
+UDS -> DB : SELECT * FROM users WHERE email = ?
+DB --> UDS : UserDetails
+UDS --> BE : UserDetails
+
+BE -> BE : AuthenticationManager\n.authenticate()
+BE -> JWT : generateJwtToken(userDetails)
+JWT --> BE : token (JWT String)
+
+BE --> AS : {token, role, userId, nom}
+AS -> AS : localStorage.setItem('token', ...)
+AS --> FE : AuthResponse
+FE -> FE : Router.navigate()\n→ /dashboard/{role}
+FE --> U : Tableau de bord affiché
+
+note right of JWT
+  JWT contient:
+  - subject: email
+  - roles: [ROLE_CLIENT]
+  - expiry: 24h
+end note
+@enduml
+```
+
+---
+
+### 📌 Séquence 2 — Création d'une Réservation (Flux complet)
+
+**Acteur :** Client → Angular → Spring Boot → MySQL + Notification
+
+```plantuml
+@startuml Sequence_Reservation
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor "Client" as C
+participant "Angular\nAddReservationComponent" as FE
+participant "ReservationService\n(Angular)" as RS
+participant "AppInterceptor\n(JWT header)" as INT
+participant "ReservationRestController" as BE
+participant "ReservationService\n(Spring)" as SVC
+participant "ChambreService" as CS
+participant "NotificationService" as NS
+database "MySQL" as DB
+
+C -> FE : Choisir chambre + dates\n+ nombre personnes
+FE -> FE : Calculer prixTotal\n= prixNuit × nbJours
+FE -> RS : createReservation(reservationDTO)
+RS -> INT : Ajouter header\nAuthorization: Bearer {token}
+INT -> BE : POST /api/reservations\n{chambreId, dateArrivee,\ndateDepart, nombrePersonnes}
+
+BE -> SVC : createReservation(dto, clientId)
+SVC -> CS : findById(chambreId)
+CS -> DB : SELECT * FROM chambres WHERE id = ?
+DB --> CS : Chambre
+CS --> SVC : Chambre
+
+SVC -> SVC : Vérifier disponibilité\n(pas de conflits dates)
+SVC -> SVC : Générer référence:\n"RES-{timestamp}-{rand}"
+SVC -> DB : INSERT INTO reservations\n(statut=EN_ATTENTE, ...)
+DB --> SVC : Reservation sauvée
+
+SVC -> NS : sendNotification(client,\n"Réservation créée", SUCCESS)
+NS -> DB : INSERT INTO notifications
+SVC -> NS : sendNotification(partenaire,\n"Nouvelle réservation", INFO)
+NS -> DB : INSERT INTO notifications
+SVC --> BE : ReservationDTO
+
+BE --> RS : HTTP 201 {reservationId, reference}
+RS --> FE : Réservation créée
+FE -> FE : Router.navigate()\n→ /reservations/{id}
+FE --> C : Page confirmation avec référence
+
+note over SVC
+  Statut initial: EN_ATTENTE
+  Le partenaire doit CONFIRMER
+  ou le scheduler expire après délai
+end note
+@enduml
+```
+
+---
+
+### 📌 Séquence 3 — Gestion Hôtel par un Partenaire (CRUD Hotel + Chambre)
+
+```plantuml
+@startuml Sequence_GestionHotel
+skinparam sequenceMessageAlign center
+
+actor "Partenaire" as P
+participant "Angular\nHotelAddComponent" as FE
+participant "HotelService\n(Angular)" as HS
+participant "HotelRestController" as BE
+participant "HotelService\n(Spring)" as SVC
+participant "FileStorageService" as FS
+database "MySQL" as DB
+
+P -> FE : Remplir formulaire hôtel\n+ uploader images
+FE -> HS : createHotel(formData)
+HS -> BE : POST /api/hotels\n(multipart/form-data)\n[ROLE_PARTENAIRE requis]
+
+BE -> BE : Vérifier JWT + role\n(ROLE_PARTENAIRE || ROLE_ADMIN)
+BE -> FS : storeFiles(imageFiles)
+FS -> FS : Sauvegarder dans /uploads/hotels/
+FS --> BE : imageUrls[]
+
+BE -> SVC : saveHotel(hotel, partenaireId, imageUrls)
+SVC -> SVC : hotel.setPartenaire(user)
+SVC -> SVC : hotel.setImagesUrls(join(",",...))
+SVC -> DB : INSERT INTO hotels
+DB --> SVC : Hotel (id généré)
+SVC --> BE : HotelDTO
+
+BE --> HS : HTTP 201 {hotel}
+HS --> FE : Hotel créé
+FE --> P : Redirection vers\n/hotel/details/{id}
+
+P -> FE : Ajouter une Chambre
+FE -> BE : POST /api/chambres/{hotelId}\n{numero, typeChambre, prixNuit, ...}
+BE -> BE : Vérifier ownership\n(hotel.partenaire == currentUser)
+BE -> DB : INSERT INTO chambres\n(hotel_id = {hotelId})
+DB --> BE : Chambre sauvée
+BE --> FE : ChambreDTO
+FE --> P : Chambre ajoutée avec succès
+
+note right of BE
+  Ownership check:
+  hotel.partenaire.id == JWT.userId
+  OU user has ROLE_ADMIN
+end note
+@enduml
+```
+
+---
+
+### 📌 Séquence 4 — Gestion des Utilisateurs par l'Admin (CRUD)
+
+**Acteur :** Administrateur → Angular → `UserRestController` → `UserService` → MySQL  
+Route protégée : `@PreAuthorize("hasRole('ADMIN')")`
+
+```plantuml
+@startuml Sequence_GestionUtilisateurs
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor "Administrateur" as A
+participant "Angular\nUsersComponent" as FE
+participant "UserService\n(Angular)" as US
+participant "AppInterceptor\n(JWT header)" as INT
+participant "UserRestController\n(Spring)" as BE
+participant "UserService\n(Spring)" as SVC
+database "MySQL" as DB
+
+== Lister les utilisateurs ==
+A -> FE : Accéder à /admin/users
+FE -> US : getUsers(page, size, search, role, active)
+US -> INT : Ajouter Authorization: Bearer {token}
+INT -> BE : GET /api/admin/users\n?page=0&size=10&search=...&role=CLIENT
+BE -> BE : @PreAuthorize("hasRole('ADMIN')")
+BE -> DB : SELECT * FROM users\nWHERE nom LIKE ? OR email LIKE ?\nORDER BY id DESC
+DB --> BE : Page<User>
+BE -> BE : Filtrer par role, actif\n(in-memory)
+BE --> US : HTTP 200 Page<UserResponse>
+US --> FE : Liste paginée
+FE --> A : Tableau des utilisateurs
+
+== Créer un utilisateur ==
+A -> FE : Cliquer "Nouveau" → /admin/users/create
+FE -> FE : Choisir rôle:\nCLIENT / PARTENAIRE / ADMIN
+A -> FE : Soumettre formulaire
+FE -> BE : POST /api/admin/users\n{nom, email, role, motDePasse, ...}
+BE -> SVC : switch(role)\n  ROLE_CLIENT → registerClient()\n  ROLE_PARTENAIRE → registerPartenaire()\n  ROLE_ADMIN → registerAdministrator()
+SVC -> SVC : BCrypt.encode(motDePasse)
+SVC -> DB : INSERT INTO users\nINSERT INTO {clients|partenaires|administrators}\nINSERT INTO user_roles
+DB --> SVC : User créé (id)
+SVC --> BE : User
+BE --> FE : HTTP 201 UserResponse
+FE --> A : Utilisateur créé ✓
+
+== Activer / Désactiver un utilisateur ==
+A -> FE : Toggle switch "Actif"
+FE -> BE : PATCH /api/admin/users/{id}/status\n{activate: true|false}
+BE -> SVC : findById(id)
+SVC -> DB : SELECT * FROM users WHERE id = ?
+DB --> SVC : User
+SVC --> BE : User
+BE -> BE : user.setActif(request.isActivate())
+BE -> SVC : updateUser(id, user)
+SVC -> DB : UPDATE users SET actif = ? WHERE id = ?
+DB --> SVC : OK
+SVC --> BE : User mis à jour
+BE --> FE : HTTP 200 UserResponse
+FE --> A : Statut mis à jour ✓
+
+== Supprimer un utilisateur ==
+A -> FE : Cliquer "Supprimer"
+FE -> BE : DELETE /api/admin/users/{id}
+BE -> SVC : deleteUser(id)
+SVC -> DB : DELETE FROM users WHERE id = ?
+DB --> SVC : OK
+SVC --> BE : true
+BE --> FE : HTTP 204 No Content
+FE --> A : Utilisateur supprimé ✓
+
+note right of BE
+  Tous les endpoints sous
+  /api/admin/users requièrent:
+  ROLE_ADMIN dans le JWT
+end note
+@enduml
+```
+
+---
+
+### 📌 Séquence 5 — Confirmation / Refus d'une Réservation (Partenaire)
+
+**Acteur :** Partenaire → `ReservationRestController` → `ReservationService` + `NotificationService`
+
+```plantuml
+@startuml Sequence_StatutReservation
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor "Partenaire" as P
+participant "Angular\nReservationListComponent" as FE
+participant "ReservationService\n(Angular)" as RS
+participant "ReservationRestController" as BE
+participant "ReservationService\n(Spring)" as SVC
+participant "NotificationService" as NS
+participant "ChambreService" as CS
+database "MySQL" as DB
+
+P -> FE : Voir réservations EN_ATTENTE\n(/reservations/partenaire)
+FE -> BE : GET /api/reservations?page=0\n[ROLE_PARTENAIRE]
+BE -> BE : Extraire user depuis JWT
+BE -> SVC : getReservationsByPartenaire(user)
+SVC -> DB : SELECT r.* FROM reservations r\nJOIN chambres c ON r.chambre_id=c.id\nJOIN hotels h ON c.hotel_id=h.id\nWHERE h.partenaire_id = ?
+DB --> SVC : List<Reservation>
+SVC --> BE : Page<ReservationDTO>
+BE --> FE : HTTP 200 Liste
+FE --> P : Liste des réservations en attente
+
+== CONFIRMER une réservation ==
+P -> FE : Cliquer "Confirmer" sur réservation
+FE -> BE : PUT /api/reservations/{id}/statut\n{activate: true}
+BE -> SVC : confirmReservation(id)
+SVC -> DB : SELECT * FROM reservations WHERE id = ?
+DB --> SVC : Reservation (statut=EN_ATTENTE)
+SVC -> SVC : reservation.setStatut(CONFIRMEE)
+SVC -> DB : UPDATE reservations\nSET statut='CONFIRMEE', updated_at=NOW()\nWHERE id = ?
+DB --> SVC : OK
+SVC -> CS : chambre.setDisponible(false)
+CS -> DB : UPDATE chambres SET disponible=false\nWHERE id = ?
+SVC -> NS : createNotification(client,\n"Réservation confirmée!", SUCCESS)
+NS -> DB : INSERT INTO notifications
+SVC --> BE : ReservationDTO
+BE --> FE : HTTP 200 {statut: "CONFIRMEE"}
+FE --> P : Réservation confirmée ✓
+
+== REFUSER une réservation ==
+P -> FE : Cliquer "Refuser"
+FE -> BE : PUT /api/reservations/{id}/statut\n{activate: false}
+BE -> SVC : refuseReservation(id, "Annulée via API")
+SVC -> SVC : reservation.setStatut(ANNULEE)
+SVC -> DB : UPDATE reservations SET statut='ANNULEE'
+SVC -> CS : chambre.setDisponible(true)
+CS -> DB : UPDATE chambres SET disponible=true
+SVC -> NS : createNotification(client,\n"Réservation refusée", WARNING)
+NS -> DB : INSERT INTO notifications
+SVC --> BE : ReservationDTO
+BE --> FE : HTTP 200 {statut: "ANNULEE"}
+FE --> P : Réservation refusée ✓
+
+note over SVC
+  Cycle de vie complet:
+  EN_ATTENTE → CONFIRMEE → TERMINEE (scheduler)
+  EN_ATTENTE → ANNULEE (refus/annulation)
+end note
+@enduml
+```
+
+---
+
+### 📌 Séquence 6 — Recherche d'Hôtels (Visiteur / Client)
+
+**Acteur :** Visiteur → `SearchComponent` → `HotelSearchController` → `HotelSearchService`
+
+```plantuml
+@startuml Sequence_Recherche
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor "Visiteur" as V
+participant "Angular\nSearchComponent" as FE
+participant "HotelSearchService\n(Angular)" as HS
+participant "HotelSearchController\n(Spring)" as BE
+participant "HotelSearchService\n(Spring)" as SVC
+database "MySQL" as DB
+
+V -> FE : Saisir: ville, dates,\ncapacité, étoiles, prix
+FE -> FE : Debounce (300ms)\n+ validation formulaire
+
+== Autocomplétion ==
+V -> FE : Taper "Casa..."
+FE -> BE : GET /api/search/autocomplete?q=Casa
+BE -> SVC : searchAutocomplete("Casa")
+SVC -> DB : SELECT DISTINCT ville FROM hotels\nWHERE ville LIKE 'Casa%' AND actif=true
+DB --> SVC : ["Casablanca", "Casanet"]
+SVC --> BE : List<String>
+BE --> FE : HTTP 200 suggestions[]
+FE --> V : Dropdown suggestions
+
+== Recherche principale ==
+V -> FE : Soumettre formulaire de recherche
+FE -> HS : searchHotels(searchDTO)
+HS -> BE : GET /api/search?\nville=Casablanca&dateArrivee=2026-03-01\n&dateDepart=2026-03-07&capacite=2\n&etoiles=4&prixMin=500&prixMax=2000
+BE -> SVC : searchHotels(HotelSearchDTO, pageable)
+SVC -> DB : SELECT h.* FROM hotels h\nJOIN chambres c ON c.hotel_id = h.id\nWHERE h.ville = ? AND h.actif = true\nAND h.etoiles >= ?\nAND c.prixNuit BETWEEN ? AND ?\nAND c.capacite >= ?\nAND c.disponible = true\nAND NOT EXISTS (réservations conflictuelles)\nGROUP BY h.id
+DB --> SVC : List<Hotel>
+SVC -> SVC : convertToHotelCardDTO(hotel)\n(premiere image, prixMin, rating)
+SVC --> BE : Page<HotelCardDTO>
+BE --> HS : HTTP 200 {content[], totalPages, totalElements}
+HS --> FE : Résultats paginés
+FE --> V : Liste des hôtels avec\nprix, étoiles, images
+
+== Filtres dynamiques ==
+V -> FE : Modifier filtre prix
+FE -> BE : GET /api/search/filters?\n(mêmes params)
+BE -> SVC : getFilterOptions(searchDTO)
+SVC -> DB : COUNT hotels par étoiles,\nMIN/MAX prix, équipements
+DB --> SVC : FilterOptionsDTO
+BE --> FE : HTTP 200 {priceRange, starCounts,...}
+FE --> V : Mise à jour des filtres
+
+note right of SVC
+  HotelSearchService exclut automatiquement
+  les chambres avec réservations
+  CONFIRMEE sur la période demandée
+end note
+@enduml
+```
+
+---
+
+### 📌 Séquence 7 — Tableau de Bord (Dashboard par rôle)
+
+**Acteurs :** Client/Partenaire/Admin → `DashboardController` → `DashboardService`
+
+```plantuml
+@startuml Sequence_Dashboard
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor "Utilisateur" as U
+participant "Angular\nDashboardComponent" as FE
+participant "DashboardService\n(Angular)" as DS
+participant "DashboardController\n(Spring)" as BE
+participant "DashboardService\n(Spring)" as SVC
+database "MySQL" as DB
+
+U -> FE : Naviguer vers /dashboard
+FE -> FE : Lire rôle depuis\nlocalStorage / JWT
+FE -> FE : Router.navigate()\n→ /dashboard/admin\n→ /dashboard/partenaire\n→ /dashboard/client
+
+== Cas Admin ==
+FE -> BE : GET /api/dashboard/admin\n[ROLE_ADMIN]
+BE -> SVC : getAdminStats()
+SVC -> DB : COUNT hotels (total + actif)
+SVC -> DB : COUNT users total
+SVC -> DB : COUNT reservations total + EN_ATTENTE
+SVC -> DB : COUNT clients, partenaires par rôle
+SVC -> DB : SUM prixTotal (revenus total + mois)
+SVC -> DB : getRevenueByMonth (6 derniers mois)
+SVC -> DB : findAll reservations ORDER BY DESC LIMIT 8
+DB --> SVC : DashboardResponse
+SVC --> BE : {stats: {...}, lastReservations: [...]}
+BE --> FE : HTTP 200 DashboardResponse
+FE --> U : KPIs + graphique revenus\n+ tableau dernières réservations
+
+== Cas Partenaire ==
+FE -> BE : GET /api/dashboard/partenaire\n[ROLE_PARTENAIRE]
+BE -> BE : Extraire user (partenaire) depuis JWT
+BE -> SVC : getPartenaireStats(partenaire)
+SVC -> DB : COUNT hotels WHERE partenaire_id = ?
+SVC -> DB : COUNT chambres total + disponibles\n(via hotels du partenaire)
+SVC -> DB : findAll reservations\npar hôtels du partenaire
+SVC -> DB : SUM revenus total + mois courant
+SVC -> DB : SUM revenus mois précédent\n(pour calcul croissance %)
+DB --> SVC : DashboardResponse
+SVC --> BE : {myHotels, revenus, growth%, chambres...}
+BE --> FE : HTTP 200 DashboardResponse
+FE --> U : Stats hôtels + taux croissance\n+ dernières réservations
+
+== Cas Client ==
+FE -> BE : GET /api/dashboard/client\n[ROLE_CLIENT]
+BE -> BE : Extraire user (client) depuis JWT
+BE -> SVC : getClientStats(client)
+SVC -> DB : findByClient(client)\n→ reservations total + EN_ATTENTE
+SVC -> DB : findRecommendedHotels\n(4 hôtels actifs au hasard)
+DB --> SVC : DashboardResponse
+SVC --> BE : {totalReservations, pending, recommended}
+BE --> FE : HTTP 200 DashboardResponse
+FE --> U : Mes réservations + hôtels recommandés
+
+note right of SVC
+  DashboardService agrège plusieurs
+  repositories en une seule réponse
+  pour minimiser les requêtes HTTP
+  depuis Angular
+end note
+@enduml
+```
+
+---
+
+### 📌 Séquence 8 — Expiration Automatique des Réservations (Scheduler)
+
+**Acteur :** `@Scheduled` Cron + `ApplicationReadyEvent` → `ReservationTaskService`
+
+```plantuml
+@startuml Sequence_Scheduler
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+participant "Spring\nApplication\nContext" as APP
+participant "ReservationTaskService\n(@Scheduled)" as TASK
+participant "ReservationRepository" as REPO
+participant "NotificationService" as NS
+database "MySQL" as DB
+
+== Au démarrage de l'application ==
+APP -> TASK : @EventListener(ApplicationReadyEvent)
+TASK -> TASK : onApplicationReady()\n→ checkExpiredReservations()
+
+== Exécution quotidienne (minuit) ==
+APP -> TASK : @Scheduled(cron="0 0 0 * * ?")\nCheckExpiredReservations()
+TASK -> TASK : today = LocalDate.now()
+
+TASK -> REPO : findByStatutAndDateDepartBefore\n(CONFIRMEE, today)
+REPO -> DB : SELECT * FROM reservations\nWHERE statut='CONFIRMEE'\nAND date_depart < CURDATE()
+DB --> REPO : List<Reservation> expirées
+REPO --> TASK : List<Reservation>
+
+loop Pour chaque réservation expirée
+  TASK -> REPO : updateStatut(id, TERMINEE)
+  REPO -> DB : UPDATE reservations\nSET statut='TERMINEE'\nWHERE id = ?
+  DB --> REPO : OK
+
+  TASK -> DB : UPDATE chambres SET disponible=true\nWHERE id = {chambre_id}
+
+  TASK -> NS : createNotification(client,\n"Votre séjour {REF} est terminé.", SUCCESS)
+  NS -> DB : INSERT INTO notifications\n(user_id=client, type=SUCCESS)
+
+  TASK -> NS : createNotification(partenaire,\n"Séjour {client} terminé.\nChambre {num} disponible.", INFO)
+  NS -> DB : INSERT INTO notifications\n(user_id=partenaire, type=INFO)
+
+  TASK -> REPO : save(reservation)
+  REPO -> DB : COMMIT transaction
+end
+
+TASK -> TASK : log.info("{N} réservations\nterminées.")
+
+note over TASK
+  Cron: "0 0 0 * * ?"
+  Exécution: chaque jour à 00:00:00
+  @Transactional garantit l'atomicité
+  de chaque expiration
+end note
+@enduml
+```
+
+---
+
+### 📌 Séquence 9 — Modification du Profil Utilisateur
+
+**Acteur :** Utilisateur → `ProfileRestController` → `UserService`  
+Valable pour Client, Partenaire (champs entreprise) et Admin
+
+```plantuml
+@startuml Sequence_ModificationProfil
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor "Utilisateur" as U
+participant "Angular\nProfileEditComponent" as FE
+participant "ProfileService\n(Angular)" as PS
+participant "ProfileRestController\n(Spring)" as BE
+participant "UserService\n(Spring)" as SVC
+database "MySQL" as DB
+
+== Charger le profil ==
+U -> FE : Naviguer vers /profile/edit
+FE -> BE : GET /api/profile\n[Authorization: Bearer {token}]
+BE -> BE : Extraire email depuis JWT
+BE -> SVC : findByEmail(email)
+SVC -> DB : SELECT u.*, p.*, a.*\nFROM users u\nLEFT JOIN partenaires p ON p.user_id=u.id\nLEFT JOIN administrators a ON a.user_id=u.id\nWHERE u.email = ?
+DB --> SVC : User (polymorphe)
+SVC --> BE : UserResponse (avec getUserType())
+BE --> FE : HTTP 200 {nom, email, telephone,\nnomEntreprise, siret, ...}
+FE --> U : Formulaire pré-rempli
+
+== Modifier le profil ==
+U -> FE : Modifier champs + soumettre
+FE -> FE : Validation (email unique,\ntéléphone format, etc.)
+FE -> BE : PUT /api/profile\n{nom, email, telephone, adresse,\nnomEntreprise?, siret?, ...}
+BE -> SVC : findByEmail(currentEmail)
+SVC -> DB : SELECT * FROM users WHERE email=?
+DB --> SVC : User existant
+SVC --> BE : User
+BE -> BE : Mise à jour champs communs\n(nom, email, téléphone, adresse)
+BE -> BE : if(user instanceof Partenaire)\n  → setNomEntreprise()\n  → setSiret()\n  → setAdresseEntreprise()
+BE -> SVC : updateUser(id, user)
+SVC -> DB : UPDATE users SET nom=?, email=?,\ntelephone=?, updated_at=NOW()\nWHERE id = ?
+DB --> SVC : OK (si Partenaire)
+SVC -> DB : UPDATE partenaires SET\nnom_entreprise=?, siret=?\nWHERE user_id = ?
+DB --> SVC : OK
+SVC --> BE : User mis à jour
+BE --> FE : HTTP 200 UserResponse
+FE --> U : Profil mis à jour ✓
+
+== Changer le mot de passe ==
+U -> FE : Naviguer vers /profile/password
+FE -> BE : PUT /api/profile/password\n{ancienMotDePasse, nouveauMotDePasse}
+BE -> BE : passwordEncoder.matches\n(ancien, storedHash)
+alt Ancien MDP correct
+  BE -> BE : passwordEncoder.encode(nouveau)
+  BE -> SVC : updatePassword(id, hashedNew)
+  SVC -> DB : UPDATE users SET mot_de_passe=?\nWHERE id = ?
+  DB --> SVC : OK
+  SVC --> BE : OK
+  BE --> FE : HTTP 200 "Mot de passe mis à jour"
+  FE --> U : ✓ Succès
+else Ancien MDP incorrect
+  BE --> FE : HTTP 400 "Ancien mot de passe incorrect"
+  FE --> U : ✗ Erreur
+end
+
+note right of BE
+  JWT ne contient pas le mot de passe.
+  L'utilisateur doit se reconnecter
+  après changement de mot de passe
+  si le token expire.
+end note
+@enduml
+```
+
+---
+
+## 🗺️ Récapitulatif de tous les Diagrammes de Séquence
+
+| # | Scénario | Acteurs principaux | Endpoint(s) clé |
+|---|----------|--------------------|-----------------|
+| **Seq-1** | Authentification JWT | Utilisateur → Angular → Spring Security | `POST /api/auth/login` |
+| **Seq-2** | Création réservation | Client → REST → MySQL + Notif | `POST /api/reservations` |
+| **Seq-3** | Gestion hôtel/chambre | Partenaire → REST → FileStorage | `POST /api/hotels`, `POST /api/chambres/{id}` |
+| **Seq-4** | Gestion utilisateurs | Admin → CRUD Users | `GET/POST/PUT/PATCH/DELETE /api/admin/users` |
+| **Seq-5** | Confirmation réservation | Partenaire → Statut → Notif | `PUT /api/reservations/{id}/statut` |
+| **Seq-6** | Recherche hôtels | Visiteur → Search + Autocomplete | `GET /api/search?...` |
+| **Seq-7** | Tableau de bord | Tous rôles → Stats agrégées | `GET /api/dashboard/{role}` |
+| **Seq-8** | Expiration automatique | `@Scheduled` cron quotidien | (interne Spring) |
+| **Seq-9** | Modification profil | Utilisateur → ProfileRest | `GET/PUT /api/profile` |
+
+---
+
+## 🔑 Récapitulatif des Relations JPA (pour le diagramme de classe)
+
+| Relation | Source | Cible | Type | Colonne FK |
+|----------|--------|-------|------|------------|
+| Partenaire possède | `Hotel` | `Partenaire (User)` | `@ManyToOne` | `partenaire_id` |
+| Hôtel contient | `Chambre` | `Hotel` | `@ManyToOne` | `hotel_id` |
+| Client fait | `Reservation` | `User (client)` | `@ManyToOne` | `client_id` |
+| Réservation sur | `Reservation` | `Chambre` | `@ManyToOne` | `chambre_id` |
+| Paiement lié à | `Paiement` | `Reservation` | `@ManyToOne` | `reservation_id` |
+| Offre sur | `OffrePromotionnelle` | `Chambre` | `@ManyToOne` | `chambre_id` |
+| Notification vers | `Notification` | `User` | `@ManyToOne` | `user_id` |
+| User a des rôles | `User` | `Role` | `@ManyToMany` | `user_roles` |
+
+---
+
+## ⚙️ Services Spring Boot (à placer dans le diagramme de classe étendu)
+
+| Service | Responsabilité principale |
+|---------|--------------------------|
+| `UserService` | Inscription, authentification, gestion utilisateurs |
+| `HotelService` | CRUD hôtels, activation/désactivation |
+| `ChambreService` | CRUD chambres, disponibilité |
+| `ReservationService` | Créer, annuler, confirmer, changer statut |
+| `ReservationTaskService` | `@Scheduled` — expirer réservations automatiquement |
+| `PaiementService` | Traitement des paiements |
+| `NotificationService` | Créer et envoyer notifications |
+| `DashboardService` | Agrégation statistiques (revenus, taux, etc.) |
+| `HotelSearchService` | Recherche avancée par critères |
+| `FileStorageService` | Upload et stockage des images |
+
+---
+
+## 🌐 DIAGRAMME DE SÉQUENCE GLOBAL — Vue d'ensemble de toute l'application
+
+> Ce diagramme unique résume les **9 flux principaux** de RimbestArch en un seul schéma.  
+> Chaque groupe (`==`) correspond à un scénario clé. Les couleurs de participants restent cohérentes tout au long.
+
+```plantuml
+@startuml RimbestArch_MasterSequence
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam sequenceGroupBorderColor #6C757D
+skinparam sequenceGroupFontSize 13
+skinparam sequenceGroupFontStyle bold
+skinparam ParticipantBackgroundColor #EEF2FF
+skinparam ParticipantBorderColor #4F46E5
+skinparam ActorBackgroundColor #DBEAFE
+skinparam DatabaseBackgroundColor #FEF3C7
+skinparam DatabaseBorderColor #D97706
+skinparam ArrowColor #374151
+skinparam NoteBackgroundColor #F0FDF4
+skinparam NoteBorderColor #16A34A
+
+' ═══════════════════════════════
+' PARTICIPANTS
+' ═══════════════════════════════
+actor "Visiteur\n/ Client\n/ Partenaire\n/ Admin" as U
+participant "Angular SPA" as FE
+participant "AppInterceptor\n(JWT)" as INT
+participant "Spring Boot\nREST API" as BE
+participant "Spring Security\n+ JwtUtils" as SEC
+participant "Services\n(Business Logic)" as SVC
+participant "Repositories\n(Spring Data JPA)" as REPO
+participant "Scheduler\n(@Scheduled)" as SCHED
+database "MySQL DB" as DB
+
+' ═══════════════════════════════
+' SEQ-1: AUTHENTIFICATION
+' ═══════════════════════════════
+== [Seq-1] Authentification JWT ==
+U -> FE : Saisir email + motDePasse
+FE -> BE : POST /api/auth/login\n{email, motDePasse}
+BE -> SEC : authenticate(email, mdp)\n+ loadUserByUsername()
+SEC -> DB : SELECT users WHERE email=?
+DB --> SEC : UserDetails
+SEC -> SEC : BCrypt.matches() + generateJwtToken()
+SEC --> BE : JWT Token
+BE --> FE : {token, role, userId, nom}
+FE -> FE : localStorage.setItem('token')\nRouter → /dashboard/{role}
+FE --> U : ✔ Tableau de bord affiché
+
+' ═══════════════════════════════
+' SEQ-2: INSCRIPTION
+' ═══════════════════════════════
+== [Seq-2] Inscription nouvel utilisateur ==
+U -> FE : Remplir formulaire\n(Client ou Partenaire)
+FE -> BE : POST /api/auth/register\n{nom, email, mdp, role, ...}
+BE -> SVC : registerClient()\nOU registerPartenaire()
+SVC -> SVC : BCrypt.encode(motDePasse)\nAssigner ROLE_{TYPE}
+SVC -> DB : INSERT INTO users\nINSERT INTO {clients|partenaires}\nINSERT INTO user_roles
+DB --> SVC : User créé (id)
+SVC --> BE : UserResponse
+BE --> FE : HTTP 201
+FE --> U : ✔ Redirection → /login
+
+' ═══════════════════════════════
+' SEQ-3 & SEQ-4: GESTION CONTENU (Admin/Partenaire)
+' ═══════════════════════════════
+== [Seq-3/4] Gestion des Données (Hôtels, Chambres, Utilisateurs) ==
+U -> FE : CRUD Hotel / Chambre / Utilisateur
+FE -> INT : Requête HTTP
+INT -> BE : Ajouter\nAuthorization: Bearer {token}
+BE -> SEC : Vérifier JWT + @PreAuthorize\n(ROLE_ADMIN | ROLE_PARTENAIRE)
+alt Créer Hotel (Partenaire)
+  BE -> SVC : saveHotel(hotel, partenaireId)\n+ storeImages(files)
+  SVC -> DB : INSERT INTO hotels\n+ images stockées dans /uploads/
+else Créer Chambre
+  BE -> SVC : saveChambre(chambre, hotelId)\nVérifier ownership
+  SVC -> DB : INSERT INTO chambres
+else Gérer Utilisateurs (Admin only)
+  BE -> SVC : registerUser() / updateUser()\n/ deleteUser() / toggleStatus()
+  SVC -> DB : INSERT/UPDATE/DELETE users\n+ tables filles
+end
+DB --> SVC : Entité sauvée
+SVC --> BE : DTO
+BE --> FE : HTTP 200/201
+FE --> U : ✔ Opération réussie
+
+' ═══════════════════════════════
+' SEQ-5: RECHERCHE HOTELES
+' ═══════════════════════════════
+== [Seq-5] Recherche & Découverte d'Hôtels ==
+U -> FE : Saisir critères\n(ville, dates, étoiles, prix...)
+FE -> BE : GET /api/search?\nville=...&dateArrivee=...&capacite=...
+BE -> SVC : HotelSearchService\n.searchHotels(criteria, pageable)
+SVC -> DB : SELECT hotels JOIN chambres\nWHERE actif=true\nAND disponible=true\nAND NOT EXISTS (conflits dates)\nAND critères filtrés
+DB --> SVC : Page<Hotel>
+SVC --> BE : Page<HotelCardDTO>
+BE --> FE : HTTP 200 résultats paginés
+FE --> U : Liste hôtels + filtres dynamiques\n+ autocomplétion ville
+
+' ═══════════════════════════════
+' SEQ-6: RÉSERVATION COMPLÈTE
+' ═══════════════════════════════
+== [Seq-6] Cycle complet d'une Réservation ==
+note over U, DB
+  Statuts: EN_ATTENTE → CONFIRMEE → TERMINEE (scheduler)
+  OU      EN_ATTENTE → ANNULEE (refus/annulation client)
+end note
+
+U -> FE : Choisir chambre + dates\n(CLIENT uniquement)
+FE -> BE : POST /api/reservations\n{chambreId, dateArrivee, dateDepart, nbPersonnes}
+BE -> SVC : ReservationService\n.createReservation(dto, client)
+SVC -> SVC : checkDisponibilite()\ngenerateReference("RES-{ts}")\ncalculatePrixTotal()
+SVC -> DB : INSERT INTO reservations\n(statut=EN_ATTENTE)
+SVC -> DB : INSERT INTO notifications\n(client=SUCCESS,\npartenaire=INFO)
+BE --> FE : HTTP 201 {reference, prixTotal}
+FE --> U : ✔ Confirmation réservation
+
+U -> FE : Partenaire → Confirmer / Refuser
+FE -> BE : PUT /api/reservations/{id}/statut\n{activate: true|false}
+BE -> SVC : confirmReservation()\nOU refuseReservation()
+SVC -> DB : UPDATE reservations SET statut=?\nUPDATE chambres SET disponible=?
+SVC -> DB : INSERT INTO notifications (client)
+BE --> FE : HTTP 200 {statut: CONFIRMEE|ANNULEE}
+FE --> U : ✔ Statut mis à jour
+
+' ═══════════════════════════════
+' SEQ-7: SCHEDULER (tâche planifiée)
+' ═══════════════════════════════
+== [Seq-7] Expiration Automatique (Scheduler quotidien) ==
+SCHED -> SCHED : @Scheduled cron\n"0 0 0 * * ?" (minuit)
+SCHED -> REPO : findByStatut(CONFIRMEE)\nWHERE dateDepart < TODAY
+REPO -> DB : SELECT réservations expirées
+DB --> REPO : List<Reservation>
+loop Chaque réservation expirée
+  SCHED -> DB : UPDATE statut → TERMINEE
+  SCHED -> DB : UPDATE chambre SET disponible=true
+  SCHED -> DB : INSERT notifications\n(client=SUCCESS, partenaire=INFO)
+end
+SCHED -> SCHED : log("{N} réservations terminées")
+
+' ═══════════════════════════════
+' SEQ-8: DASHBOARD
+' ═══════════════════════════════
+== [Seq-8] Tableau de Bord (adapté au rôle) ==
+U -> FE : Naviguer /dashboard
+FE -> BE : GET /api/dashboard/{role}\n[JWT requis]
+BE -> SVC : DashboardService\n.getAdminStats()\n.getPartenaireStats(user)\n.getClientStats(user)
+SVC -> DB : COUNT hôtels, users,\nréservations, revenus,\nhistorique 6 mois, chambres...
+DB --> SVC : Agrégats numériques
+SVC --> BE : DashboardResponse\n{stats, lastReservations,\nrecommendedHotels}
+BE --> FE : HTTP 200
+FE --> U : KPIs + graphiques\n+ dernières réservations
+
+' ═══════════════════════════════
+' SEQ-9: PROFIL
+' ═══════════════════════════════
+== [Seq-9] Gestion du Profil & Mot de Passe ==
+U -> FE : Modifier profil /profile/edit
+FE -> BE : PUT /api/profile\n{nom, email, nomEntreprise?, siret?...}
+BE -> SVC : findByEmail(jwt.email)\nupdateUser() → instanceof dispatch\n(Client | Partenaire | Admin)
+SVC -> DB : UPDATE users\nUPDATE partenaires (si Partenaire)
+DB --> SVC : OK
+BE --> FE : HTTP 200 UserResponse
+FE --> U : ✔ Profil mis à jour
+
+U -> FE : Changer mot de passe /profile/password
+FE -> BE : PUT /api/profile/password\n{ancien, nouveau}
+BE -> SEC : BCrypt.matches(ancien, hash)
+alt Correct
+  BE -> DB : UPDATE motDePasse=BCrypt.encode(nouveau)
+  BE --> FE : HTTP 200 ✔
+else Incorrect
+  BE --> FE : HTTP 400 ✗
+end
+FE --> U : Résultat affiché
+
+note over FE, BE
+  Chaque requête après login passe par AppInterceptor
+  qui injecte automatiquement: Authorization: Bearer {token}
+  Spring Security vérifie le token sur chaque endpoint protégé
+end note
+@enduml
+```
+
+---
+
+## 🛠️ Outils recommandés pour générer les diagrammes
+
+| Outil | URL | Format |
+|-------|-----|--------|
+| **PlantUML Online** | [plantuml.com/plantuml](https://www.plantuml.com/plantuml/uml/) | `.puml` |
+| **draw.io** | [draw.io](https://draw.io) | export PNG/SVG |
+| **Lucidchart** | [lucidchart.com](https://lucidchart.com) | import PlantUML |
+| **IntelliJ IDEA** | Plugin PlantUML | intégré à l'IDE |
+| **VS Code** | Extension PlantUML | preview live |
+
+> 💡 **Conseil :** Copiez le bloc `@startuml RimbestArch_MasterSequence ... @enduml` dans [plantuml.com/plantuml](https://www.plantuml.com/plantuml/uml/) pour générer le diagramme global en PNG ou SVG haute résolution.
