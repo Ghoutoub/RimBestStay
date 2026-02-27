@@ -1,0 +1,35 @@
+.room-hero-img {
+    height: 450px;
+    object-fit: cover;
+}
+
+.bg-gradient-dark {
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+}
+
+.rounded-4 {
+    border-radius: 1.25rem !important;
+}
+
+.breadcrumb-item a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.breadcrumb-item.active {
+    color: #495057;
+}
+
+.btn-primary {
+    background: linear-gradient(to right, #667eea, #764ba2);
+    border: none;
+    padding: 0.8rem 1.5rem;
+}
+
+.bg-success-subtle {
+    background-color: #d1e7dd;
+}
+
+.bg-danger-subtle {
+    background-color: #f8d7da;
+}

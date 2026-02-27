@@ -1,0 +1,155 @@
+<div *ngIf="errorMsg" class="alert alert-danger py-2">{{ errorMsg }}</div>
+<div *ngIf="loading" class="alert alert-info py-2">
+  <i class="bi bi-arrow-repeat me-2"></i>Chargement...
+</div>
+
+<div *ngIf="chambre && !loading">
+  <!-- Header with Breadcrumbs/Back -->
+  <div class="mb-4 glass-effect p-3 rounded-pill d-inline-block shadow-sm">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a routerLink="/hotel/list" class="text-decoration-none"><i
+              class="bi bi-buildings me-1"></i>Hôtels</a></li>
+        <li class="breadcrumb-item"><a [routerLink]="['/hotel/details', chambre.hotelId]"
+            class="text-decoration-none">Hôtel</a></li>
+        <li class="breadcrumb-item active fw-bold text-primary">Chambre {{ chambre.numero }}</li>
+      </ol>
+    </nav>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Images and Details -->
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm overflow-hidden mb-4 rounded-4">
+        <div *ngIf="chambre.allImageUrls && chambre.allImageUrls.length > 0" id="roomCarousel" class="carousel slide"
+          data-bs-ride="carousel">
+          <div class="carousel-indicators">
+            <button *ngFor="let img of chambre.allImageUrls; let i = index" type="button" data-bs-target="#roomCarousel"
+              [attr.data-bs-slide-to]="i" [class.active]="i === 0"></button>
+          </div>
+          <div class="carousel-inner">
+            <div *ngFor="let img of chambre.allImageUrls; let i = index; let first = first" class="carousel-item"
+              [class.active]="first">
+              <div class="position-relative">
+                <img [src]="img" class="img-fluid w-100 room-hero-img" alt="Chambre {{ chambre.numero }}"
+                  style="height: 400px; object-fit: cover;">
+                <div class="position-absolute bottom-0 start-0 p-4 w-100 bg-gradient-dark text-white">
+                  <h1 class="h3 mb-1">Chambre {{ chambre.numero }}</h1>
+                  <p class="mb-0 opacity-75">{{ chambre.type }} • {{ chambre.superficie }} m²</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#roomCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Précédent</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#roomCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Suivant</span>
+          </button>
+        </div>
+        <div *ngIf="!chambre.allImageUrls || chambre.allImageUrls.length === 0" class="position-relative">
+          <img src="assets/images/hotel-placeholder.jpg" class="img-fluid w-100 room-hero-img"
+            alt="Chambre {{ chambre.numero }}">
+          <div class="position-absolute bottom-0 start-0 p-4 w-100 bg-gradient-dark text-white">
+            <h1 class="h3 mb-1">Chambre {{ chambre.numero }}</h1>
+            <p class="mb-0 opacity-75">{{ chambre.type }} • {{ chambre.superficie || '-' }} m²</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="premium-card mb-4">
+        <div class="card-body p-4">
+          <h5 class="card-title fw-bold text-primary mb-4">
+            <i class="bi bi-info-circle-fill me-2"></i>Détails de l'hébergement
+          </h5>
+          <p class="text-secondary lh-lg mb-4">{{ chambre.description || 'Une chambre confortable avec tous les
+            équipements nécessaires pour un séjour relaxant.' }}</p>
+
+          <h6 class="fw-bold mb-3">Équipements et installations</h6>
+          <div class="row g-2">
+            <div *ngIf="chambre.wifi" class="col-md-4 col-6"><i class="bi bi-wifi text-primary me-2"></i> WiFi Gratuit
+            </div>
+            <div *ngIf="chambre.climatisation" class="col-md-4 col-6"><i class="bi bi-snow text-primary me-2"></i>
+              Climatisation</div>
+            <div *ngIf="chambre.television" class="col-md-4 col-6"><i class="bi bi-tv text-primary me-2"></i> TV
+              Satellite</div>
+            <div *ngIf="chambre.minibar" class="col-md-4 col-6"><i class="bi bi-cup-straw text-primary me-2"></i>
+              Mini-bar</div>
+            <div *ngIf="chambre.coffreFort" class="col-md-4 col-6"><i class="bi bi-safe text-primary me-2"></i>
+              Coffre-fort</div>
+            <div *ngIf="chambre.salleBainPrivee" class="col-md-4 col-6"><i class="bi bi-droplet text-primary me-2"></i>
+              Salle de bain privée</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Booking Summary -->
+    <div class="col-lg-4">
+      <div class="premium-card sticky-top" style="top: 2rem;">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <span class="text-muted small text-uppercase fw-bold ls-wide">Tarif par nuit</span>
+              <div class="fs-1 fw-bold text-primary">{{ chambre.prixParNuit || chambre.prixNuit }} <small
+                  class="fs-6 fw-normal text-muted">MRU</small></div>
+            </div>
+            <div class="text-end">
+              <span
+                class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 shadow-sm"
+                *ngIf="chambre.disponible">Disponible</span>
+              <span
+                class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2 shadow-sm"
+                *ngIf="!chambre.disponible">Indisponible</span>
+            </div>
+          </div>
+
+          <div class="bg-light rounded-3 p-3 mb-4">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Capacité</span>
+              <span class="fw-bold">{{ chambre.capacite }} personnes</span>
+            </div>
+            <div *ngIf="chambre.superficie" class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Superficie</span>
+              <span class="fw-bold">{{ chambre.superficie }} m²</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Lit(s)</span>
+              <span class="fw-bold">{{ chambre.nombreLits }} ({{ chambre.typeLits }})</span>
+            </div>
+          </div>
+
+          <!-- Bouton Réserver (Masqué pour Admin/Partenaire) -->
+          <button *ngIf="!auth.hasAnyRole(['ADMIN', 'PARTENAIRE'])"
+            class="btn btn-premium-gradient w-100 btn-lg rounded-pill mb-3 py-3 shadow-lg text-white"
+            [disabled]="!chambre.disponible" (click)="bookRoom()">
+            Réserver mon séjour <i class="bi bi-arrow-right ms-2"></i>
+          </button>
+
+          <!-- Bouton Modifier & Toggle (Visible uniquement pour Admin/Partenaire) -->
+          <div *ngIf="auth.hasAnyRole(['ADMIN', 'PARTENAIRE'])" class="text-center">
+            <button (click)="toggleAvailability()" [disabled]="toggling"
+              class="btn w-100 rounded-pill mb-3 py-2 shadow-sm" [class.btn-outline-danger]="chambre.disponible"
+              [class.btn-outline-success]="!chambre.disponible">
+              <i class="bi me-2" [class.bi-slash-circle]="chambre.disponible"
+                [class.bi-check-circle-fill]="!chambre.disponible"></i>
+              <span *ngIf="!toggling">
+                {{ chambre.disponible ? 'Rendre Indisponible' : 'Rendre Disponible' }}
+              </span>
+              <span *ngIf="toggling">
+                <span class="spinner-border spinner-border-sm me-2"></span>Mise à jour...
+              </span>
+            </button>
+
+            <a [routerLink]="['/chambre/edit', chambre.id]" class="btn btn-warning w-100 rounded-pill mb-2">
+              <i class="bi bi-pencil me-2"></i> Modifier la chambre
+            </a>
+            <p class="text-muted small">En tant qu'administrateur ou partenaire, vous pouvez gérer cette chambre.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

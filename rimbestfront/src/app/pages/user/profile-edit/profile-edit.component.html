@@ -1,0 +1,159 @@
+<div class="profile-edit-container max-width-xl mx-auto pb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 fw-bold text-gradient mb-1">Modifier mon Profil</h1>
+      <p class="text-muted"><i class="bi bi-info-circle me-1"></i> Prenez un moment pour vérifier vos informations.</p>
+    </div>
+    <a class="btn btn-light rounded-pill px-4 shadow-sm" routerLink="/profile">
+      <i class="bi bi-arrow-left me-2"></i>Retour
+    </a>
+  </div>
+
+  <div *ngIf="errorMsg" class="alert alert-danger rounded-4 py-3 border-0 shadow-sm mb-4">
+    <i class="bi bi-exclamation-octagon me-2"></i> {{ errorMsg }}
+  </div>
+  <div *ngIf="okMsg" class="alert alert-success rounded-4 py-3 border-0 shadow-sm mb-4">
+    <i class="bi bi-check2-circle me-2"></i> {{ okMsg }}
+  </div>
+
+  <div class="premium-card p-0 overflow-hidden" *ngIf="!loading">
+    <div class="bg-light p-4 border-bottom">
+      <h5 class="mb-0 fw-bold d-flex align-items-center">
+        <i class="bi bi-person-gear text-primary me-2"></i> Paramètres de base
+      </h5>
+    </div>
+
+    <div class="p-4 p-md-5">
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="row g-4">
+          <!-- Basic Account Info -->
+          <div class="col-md-6 mt-0">
+            <label class="form-label fw-bold small text-muted text-uppercase">Nom Complet *</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3 text-primary"><i
+                  class="bi bi-person"></i></span>
+              <input class="form-control border-start-0 rounded-end-pill py-2 ms-0 shadow-none ps-0"
+                formControlName="nom" placeholder="Votre nom complet" />
+            </div>
+            <small class="text-danger ps-2 mt-1 d-block" *ngIf="form.controls.nom.touched && form.controls.nom.invalid">
+              Votre nom est requis (min 2 car.).
+            </small>
+          </div>
+
+          <div class="col-md-6 mt-0">
+            <label class="form-label fw-bold small text-muted text-uppercase">Adresse Email</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 rounded-start-pill ps-3 text-muted"><i
+                  class="bi bi-envelope"></i></span>
+              <input class="form-control bg-light border-start-0 rounded-end-pill py-2 ms-0 shadow-none ps-0"
+                formControlName="email" readonly />
+            </div>
+            <small class="text-muted ps-2 mt-1 d-block">L'email ne peut pas être modifié.</small>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-muted text-uppercase">Téléphone</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3 text-primary"><i
+                  class="bi bi-telephone"></i></span>
+              <input class="form-control border-start-0 rounded-end-pill py-2 ms-0 shadow-none ps-0"
+                formControlName="telephone" placeholder="+222 ..." />
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-muted text-uppercase">Adresse</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3 text-primary"><i
+                  class="bi bi-geo-alt"></i></span>
+              <input class="form-control border-start-0 rounded-end-pill py-2 ms-0 shadow-none ps-0"
+                formControlName="adresse" placeholder="Quartier, Ville, Pays" />
+            </div>
+          </div>
+
+          <!-- Role-specific sections -->
+          <ng-container *ngIf="auth.hasRole('PARTENAIRE')">
+            <div class="col-12 mt-5">
+              <div class="d-flex align-items-center mb-2">
+                <hr class="flex-grow-1">
+                <span class="mx-3 fw-bold text-muted small text-uppercase">Informations Professionnelles</span>
+                <hr class="flex-grow-1">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold small text-muted text-uppercase">Entreprise</label>
+              <input class="form-control rounded-pill py-2 shadow-none px-3 border-primary border-opacity-25"
+                formControlName="nomEntreprise" placeholder="Ex: Rimbest Resort" />
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold small text-muted text-uppercase">Numéro SIRET</label>
+              <input class="form-control rounded-pill py-2 shadow-none px-3 border-primary border-opacity-25"
+                formControlName="siret" placeholder="14 chiffres" />
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold small text-muted text-uppercase">Téléphone Pro</label>
+              <input class="form-control rounded-pill py-2 shadow-none px-3 border-primary border-opacity-25"
+                formControlName="telephonePro" />
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold small text-muted text-uppercase">Site Web</label>
+              <input class="form-control rounded-pill py-2 shadow-none px-3 border-primary border-opacity-25"
+                formControlName="siteWeb" placeholder="https://..." />
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-bold small text-muted text-uppercase">Adresse du bureau</label>
+              <input class="form-control rounded-pill py-2 shadow-none px-3 border-primary border-opacity-25"
+                formControlName="adresseEntreprise" />
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-bold small text-muted text-uppercase">Description / Bio</label>
+              <textarea class="form-control rounded-4 shadow-none px-3 border-primary border-opacity-25"
+                formControlName="description" rows="4" placeholder="Décrivez votre activité..."></textarea>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="auth.hasRole('ADMIN')">
+            <div class="col-12 mt-5">
+              <div class="d-flex align-items-center mb-2">
+                <hr class="flex-grow-1">
+                <span class="mx-3 fw-bold text-muted small text-uppercase">Informations Administratives</span>
+                <hr class="flex-grow-1">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold small text-muted text-uppercase">Département de Gestion</label>
+              <input class="form-control rounded-pill py-2 shadow-none px-3 border-danger border-opacity-25"
+                formControlName="departement" />
+            </div>
+          </ng-container>
+        </div>
+
+        <div class="mt-5 d-flex justify-content-between align-items-center">
+          <p class="text-muted small mb-0"><i class="bi bi-shield-check text-success me-1"></i> Vos données sont
+            sécurisées.</p>
+          <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary rounded-pill px-4" routerLink="/profile">Annuler</a>
+            <button class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm" type="submit"
+              [disabled]="loading || form.invalid">
+              <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+              <i class="bi bi-cloud-arrow-up me-2" *ngIf="!loading"></i>
+              Enregistrer les modifications
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Loading Skeletons -->
+  <div class="premium-card p-5 text-center mt-4" *ngIf="loading">
+    <div class="spinner-grow text-primary" role="status"></div>
+    <p class="text-muted mt-3">Initialisation de l'éditeur...</p>
+  </div>
+</div>

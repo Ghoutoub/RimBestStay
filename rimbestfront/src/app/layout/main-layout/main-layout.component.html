@@ -1,0 +1,253 @@
+<!-- ============================================================
+  Main Layout — Premium Navbar + Footer
+  Sky Blue Identity
+  ============================================================ -->
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar navbar-expand-lg sticky-top glass-effect py-2">
+  <div class="container">
+
+    <!-- Brand -->
+    <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/">
+      <div class="icon-badge-sm bg-premium-gradient shadow-sm" style="border-radius:0.625rem">
+        <i class="bi bi-water text-white"></i>
+      </div>
+      <span class="fw-black fs-5 text-main">RIMB<span class="text-gradient">est</span>Stay</span>
+    </a>
+
+    <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"
+      data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+
+      <!-- Left Links -->
+      <ul class="navbar-nav me-auto ps-lg-4 gap-1">
+        <li class="nav-item">
+          <a class="nav-link py-2 px-3 rounded-pill" routerLink="/" routerLinkActive="active"
+            [routerLinkActiveOptions]="{exact: true}">
+            <i class="bi bi-house-door me-1"></i> Accueil
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link py-2 px-3 rounded-pill" routerLink="/hotel/list" routerLinkActive="active">
+            <i class="bi bi-buildings me-1"></i> Hôtels
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="hasRole('ROLE_CLIENT')">
+          <a class="nav-link py-2 px-3 rounded-pill" routerLink="/search" routerLinkActive="active">
+            <i class="bi bi-stars me-1 text-warning"></i> Recherche avancée
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="hasRole('ROLE_ADMIN')">
+          <a class="nav-link py-2 px-3 rounded-pill" routerLink="/admin/users" routerLinkActive="active">
+            <i class="bi bi-people me-1"></i> Gestion
+          </a>
+        </li>
+      </ul>
+
+      <!-- Right Actions -->
+      <ul class="navbar-nav align-items-center gap-2">
+        <!-- Guest -->
+        <ng-container *ngIf="!user">
+          <li class="nav-item">
+            <a class="nav-link px-3 py-2 rounded-pill" routerLink="/login">
+              Se connecter
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-premium-gradient rounded-pill px-4 py-2 shadow-sm fw-semibold" routerLink="/inscription">
+              S'inscrire
+            </a>
+          </li>
+        </ng-container>
+
+        <!-- Logged in user -->
+        <!-- Notifications -->
+        <li class="nav-item dropdown" *ngIf="user">
+          <a class="nav-link d-flex align-items-center gap-2 px-3 py-2" data-bs-toggle="dropdown" href="#" role="button"
+            aria-expanded="false" style="border-radius: 9999px !important; position: relative;">
+            <i class="bi bi-bell fs-5"
+              [ngClass]="{'text-warning': unreadCount > 0, 'text-main': unreadCount === 0}"></i>
+            <span *ngIf="unreadCount > 0"
+              class="position-absolute top-10 start-100 translate-middle badge rounded-pill bg-danger"
+              style="font-size: 0.65em;">
+              {{ unreadCount }}
+            </span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4 shadow-sm"
+            style="min-width: 300px; max-height: 400px; overflow-y: auto;">
+            <li class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+              <span class="fw-bold text-main mb-0">Notifications</span>
+              <a href="javascript:void(0)" class="text-primary text-decoration-none" style="font-size: 0.8rem;"
+                (click)="markAllAsRead()" *ngIf="unreadCount > 0">Marquer tout lu</a>
+            </li>
+
+            <li *ngIf="notifications.length === 0" class="px-3 py-4 text-center text-muted">
+              <i class="bi bi-bell-slash fs-4 d-block mb-2"></i>
+              Aucune notification
+            </li>
+
+            <ng-container *ngFor="let notif of notifications">
+              <li>
+                <a href="javascript:void(0)" class="dropdown-item rounded-3 py-2 d-flex flex-column gap-1 text-wrap"
+                  [ngClass]="{'bg-light': !notif.read}" (click)="markAsRead(notif.id)">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span class="badge" [ngClass]="{
+                            'bg-info': notif.type === 'INFO', 
+                            'bg-success': notif.type === 'SUCCESS',
+                            'bg-warning': notif.type === 'WARNING',
+                            'bg-danger': notif.type === 'DANGER',
+                            'bg-secondary': !notif.type
+                          }" style="font-size: 0.65rem;">
+                      {{ notif.type || 'INFO' }}
+                    </span>
+                    <small class="text-muted" style="font-size: 0.7rem;">{{ notif.createdAt | date:'dd/MM HH:mm'
+                      }}</small>
+                  </div>
+                  <span style="font-size: 0.85rem;" [ngClass]="{'fw-bold': !notif.read}">{{ notif.message }}</span>
+                </a>
+              </li>
+            </ng-container>
+          </ul>
+        </li>
+
+        <!-- Profil -->
+        <li class="nav-item dropdown" *ngIf="user">
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 glass-effect rounded-pill px-3 py-2"
+            data-bs-toggle="dropdown" href="#" style="border-radius: 9999px !important;">
+            <div class="user-avatar bg-premium-gradient shadow-sm">
+              {{ user.nom.charAt(0) }}
+            </div>
+            <span class="fw-semibold" style="font-size:.9rem">{{ user.nom }}</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4"
+            style="box-shadow: var(--dropdown-shadow); min-width: 210px;">
+            <li class="px-2 py-2 border-bottom mb-2" style="border-color: rgba(14,165,233,.1) !important;">
+              <p class="text-muted mb-0" style="font-size:.75rem">Connecté en tant que</p>
+              <p class="fw-bold text-main mb-0" style="font-size:.9rem">{{ user.nom }}</p>
+            </li>
+            <li>
+              <a class="dropdown-item rounded-3 py-2 d-flex align-items-center gap-2" routerLink="/profile">
+                <i class="bi bi-person-circle text-primary"></i> Mon Profil
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item rounded-3 py-2 d-flex align-items-center gap-2" routerLink="/dashboard">
+                <i class="bi bi-grid-1x2 text-primary"></i> Mon Tableau de Bord
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item rounded-3 py-2 d-flex align-items-center gap-2" routerLink="/reservations/client">
+                <i class="bi bi-journal-text text-primary"></i> Mes Réservations
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider my-2" style="border-color: rgba(14,165,233,.1)">
+            </li>
+            <li>
+              <a class="dropdown-item rounded-3 py-2 d-flex align-items-center gap-2 text-danger" href="#"
+                (click)="logout()">
+                <i class="bi bi-box-arrow-right"></i> Déconnexion
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+<!-- ── MAIN CONTENT ── -->
+<main class="container mt-4 mb-5" style="min-height: 70vh;">
+  <router-outlet></router-outlet>
+</main>
+
+<!-- ── FOOTER ── -->
+<footer class="app-footer">
+  <div class="container">
+    <div class="row g-4 mb-4">
+
+      <!-- Brand Column -->
+      <div class="col-lg-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="icon-badge-sm bg-premium-gradient shadow-sm" style="border-radius:.625rem">
+            <i class="bi bi-water text-white"></i>
+          </div>
+          <span class="footer-brand">RIMBestStay</span>
+        </div>
+        <p class="mb-3" style="font-size:.9rem; max-width:280px;">
+          Votre plateforme de réservation hôtelière de confiance en Mauritanie. Qualité, confort et sécurité.
+        </p>
+        <div class="d-flex gap-2">
+          <a href="#" class="btn btn-sm btn-outline-light rounded-circle"
+            style="width:36px;height:36px;display:grid;place-items:center;">
+            <i class="bi bi-facebook"></i>
+          </a>
+          <a href="#" class="btn btn-sm btn-outline-light rounded-circle"
+            style="width:36px;height:36px;display:grid;place-items:center;">
+            <i class="bi bi-instagram"></i>
+          </a>
+          <a href="#" class="btn btn-sm btn-outline-light rounded-circle"
+            style="width:36px;height:36px;display:grid;place-items:center;">
+            <i class="bi bi-twitter-x"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Links Column 1 -->
+      <div class="col-lg-2 col-md-4">
+        <h6 class="text-white fw-bold mb-3">Navigation</h6>
+        <ul class="list-unstyled d-flex flex-column gap-2" style="font-size:.9rem">
+          <li><a routerLink="/">Accueil</a></li>
+          <li><a routerLink="/hotel/list">Hôtels</a></li>
+          <li><a routerLink="/search">Recherche avancée</a></li>
+          <li><a routerLink="/inscription">S'inscrire</a></li>
+        </ul>
+      </div>
+
+      <!-- Links Column 2 -->
+      <div class="col-lg-2 col-md-4">
+        <h6 class="text-white fw-bold mb-3">Espace Pro</h6>
+        <ul class="list-unstyled d-flex flex-column gap-2" style="font-size:.9rem">
+          <li><a routerLink="/login">Se connecter</a></li>
+          <li><a routerLink="/dashboard">Mon espace</a></li>
+          <li><a routerLink="/hotel/add">Ajouter un hôtel</a></li>
+          <li><a routerLink="/profile">Mon profil</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact Column -->
+      <div class="col-lg-4 col-md-4">
+        <h6 class="text-white fw-bold mb-3">Contact</h6>
+        <ul class="list-unstyled d-flex flex-column gap-2" style="font-size:.9rem">
+          <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-envelope" style="color: var(--primary-light)"></i>
+            contact&#64;rimbest.mr
+          </li>
+          <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-telephone" style="color: var(--primary-light)"></i>
+            +222 XX XX XX XX
+          </li>
+          <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-geo-alt" style="color: var(--primary-light)"></i>
+            Nouakchott, Mauritanie
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <hr>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-2">
+      <p class="mb-0" style="font-size:.82rem">© 2025 RIMBestStay — Système de Réservation Hôtelière</p>
+      <div class="d-flex gap-3" style="font-size:.82rem">
+        <a href="#">Confidentialité</a>
+        <a href="#">CGU</a>
+        <a href="#">Aide</a>
+      </div>
+    </div>
+  </div>
+</footer>

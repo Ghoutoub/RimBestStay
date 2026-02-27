@@ -1,0 +1,372 @@
+<div *ngIf="hotel"
+  class="hotel-header bg-premium-gradient text-white p-5 mb-4 rounded-4 shadow-lg position-relative overflow-hidden">
+  <!-- Decorative Background Shape -->
+  <div class="position-absolute top-0 end-0 opacity-10" style="transform: translate(20%, -20%);">
+    <i class="bi bi-building" style="font-size: 15rem;"></i>
+  </div>
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="display-5 fw-bold">{{ hotel.nom }}</h1>
+        <div class="d-flex flex-wrap align-items-center mb-3">
+          <div class="star-rating me-3">
+            <span *ngFor="let i of [1,2,3,4,5]" class="me-1">
+              <i class="bi" [class.bi-star-fill]="i <= hotel.etoiles" [class.bi-star]="i > hotel.etoiles"
+                style="color: gold;"></i>
+            </span>
+          </div>
+          <span class="badge bg-light text-dark me-2">{{ hotel.etoiles }} étoiles</span>
+          <span class="badge" [class.bg-success]="hotel.actif" [class.bg-danger]="!hotel.actif">
+            {{ hotel.actif ? 'Actif' : 'Inactif' }}
+          </span>
+        </div>
+        <p class="mb-2">
+          <i class="bi bi-geo-alt me-2"></i>{{ hotel.ville }}, {{ hotel.pays }}
+          <i class="bi bi-dot ms-2 me-2"></i>
+          <i class="bi bi-telephone me-2"></i>{{ hotel.telephone }}
+        </p>
+        <p *ngIf="hotel.partenaire" class="mb-0 small">
+          <i class="bi bi-person-circle me-2"></i>Géré par {{ hotel.partenaire.nom }}
+        </p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0 position-relative style-z-1">
+        <!-- Actions selon le rôle -->
+        <div *ngIf="userRole === 'ROLE_ADMIN' || userRole === 'ROLE_PARTENAIRE'"
+          class="d-flex flex-wrap justify-content-md-end gap-2">
+          <a routerLink="/hotel/list" class="btn btn-outline-light rounded-pill px-4 shadow-lg hover-lift">
+            <i class="bi bi-arrow-left me-2"></i>Retour
+          </a>
+<a [routerLink]="['/hotel/edit', hotel.id]" 
+   class="btn btn-warning px-4 shadow-lg hover-lift text-dark">
+  <i class="bi bi-pencil me-2"></i>Modifier
+</a>
+
+        </div>
+        <div *ngIf="userRole !== 'ROLE_ADMIN' && userRole !== 'ROLE_PARTENAIRE'">
+          <button (click)="goToRooms()"
+            class="btn btn-warning btn-lg px-5 rounded-pill shadow-lg animate__animated animate__pulse animate__infinite">
+            <i class="bi bi-search me-2"></i>Réserver mon séjour
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container" *ngIf="hotel">
+  <!-- Navigation par onglets -->
+  <!-- Navigation par onglets (Premium Style) -->
+  <div class="glass-effect rounded-pill p-2 mb-4 d-inline-flex shadow-sm mx-auto d-block text-center">
+    <ul class="nav nav-pills border-0" id="hotelTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active rounded-pill px-4" id="overview-tab" data-bs-toggle="tab"
+          data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">
+          <i class="bi bi-info-circle me-2"></i>Vue d'ensemble
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-4" id="rooms-tab" data-bs-toggle="tab" data-bs-target="#rooms"
+          type="button" role="tab" aria-controls="rooms" aria-selected="false">
+          <i class="bi bi-door-closed me-2"></i>Chambres
+          <span class="badge bg-primary ms-1">{{ hotel.chambres?.length || 0 }}</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-4" id="services-tab" data-bs-toggle="tab" data-bs-target="#services"
+          type="button" role="tab" aria-controls="services" aria-selected="false">
+          <i class="bi bi-star me-2"></i>Services
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Contenu des onglets -->
+  <div class="tab-content" id="hotelTabsContent">
+    <!-- Onglet Vue d'ensemble -->
+    <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+      <div class="row">
+        <div class="col-lg-8">
+          <!-- Description -->
+          <!-- Description -->
+          <div class="premium-card mb-4">
+            <div class="card-body p-4">
+              <h5 class="card-title fw-bold text-primary mb-3">
+                <i class="bi bi-card-text me-2"></i>Description de l'Hôtel
+              </h5>
+              <p class="card-text text-secondary lh-lg">{{ hotel.description || 'Aucune description disponible.' }}</p>
+              <div class="row mt-4 pt-3 border-top">
+                <div class="col-md-6 mb-3 mb-md-0">
+                  <h6 class="fw-bold"><i class="bi bi-geo-alt-fill text-primary me-2"></i>Localisation précise</h6>
+                  <p class="text-muted mb-0 small">{{ hotel.adresse || 'Non spécifiée' }}</p>
+                </div>
+                <div class="col-md-6">
+                  <h6 class="fw-bold"><i class="bi bi-headset text-primary me-2"></i>Services client</h6>
+                  <p class="mb-1 small"><i class="bi bi-telephone me-2"></i>{{ hotel.telephone }}</p>
+                  <p class="mb-0 small"><i class="bi bi-envelope me-2"></i>{{ hotel.email }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Galerie photos -->
+          <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">
+                <i class="bi bi-images text-primary me-2"></i>Photos
+              </h5>
+              <div *ngIf="hotel.allImageUrls && hotel.allImageUrls.length > 0" id="hotelCarousel" class="carousel slide"
+                data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                  <button *ngFor="let img of hotel.allImageUrls; let i = index" type="button"
+                    data-bs-target="#hotelCarousel" [attr.data-bs-slide-to]="i" [class.active]="i === 0"
+                    [attr.aria-current]="i === 0 ? 'true' : null" [attr.aria-label]="'Slide ' + (i+1)"></button>
+                </div>
+                <div class="carousel-inner rounded">
+                  <div *ngFor="let img of hotel.allImageUrls; let first = first" class="carousel-item"
+                    [class.active]="first">
+                    <img [src]="img" class="d-block w-100" style="height: 400px; object-fit: cover;" alt="Photo hôtel">
+                  </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#hotelCarousel"
+                  data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Précédent</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#hotelCarousel"
+                  data-bs-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Suivant</span>
+                </button>
+              </div>
+              <div *ngIf="!hotel.allImageUrls || hotel.allImageUrls.length === 0" class="text-center py-5">
+                <i class="bi bi-image text-muted display-1"></i>
+                <p class="text-muted mt-3">Aucune photo disponible pour cet hôtel</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar droite : statistiques et informations rapides -->
+        <div class="col-lg-4">
+          <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">
+                <i class="bi bi-speedometer2 text-primary me-2"></i>Statistiques
+              </h5>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span>Chambres totales</span>
+                  <span class="badge bg-primary rounded-pill">{{ hotel.chambres?.length || 0 }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span>Statut</span>
+                  <span class="badge" [class.bg-success]="hotel.actif" [class.bg-danger]="!hotel.actif">
+                    {{ hotel.actif ? 'Actif' : 'Inactif' }}
+                  </span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span>Note moyenne</span>
+                  <span class="badge bg-warning text-dark">4.5/5</span>
+                </li>
+              </ul>
+              <div *ngIf="userRole === 'ROLE_ADMIN' || userRole === 'ROLE_PARTENAIRE'" class="mt-3 d-grid gap-2">
+                <a [routerLink]="['/hotel/edit', hotel.id]" class="btn btn-warning">
+                  <i class="bi bi-pencil me-2"></i>Modifier l'hôtel
+                </a>
+                <a [routerLink]="['/chambre/list', hotel.id]" class="btn btn-info">
+                  <i class="bi bi-door-closed me-2"></i>Gérer les chambres
+                </a>
+                <button class="btn btn-outline-danger" (click)="confirmDelete(hotel.id!)">
+                  <i class="bi bi-trash me-2"></i>Supprimer
+                </button>
+              </div>
+              <div *ngIf="userRole === 'ROLE_CLIENT'" class="mt-3 d-grid gap-2">
+                <button (click)="goToRooms()" class="btn btn-primary">
+                  <i class="bi bi-door-closed me-2"></i>Voir les chambres
+                </button>
+                <button class="btn btn-outline-primary">
+                  <i class="bi bi-heart me-2"></i>Ajouter aux favoris
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Équipements de l'hôtel (si présents) -->
+          <div class="card shadow-sm" *ngIf="hotel.equipementsHotel">
+            <div class="card-body">
+              <h5 class="card-title">
+                <i class="bi bi-check-circle text-success me-2"></i>Équipements
+              </h5>
+              <div class="d-flex flex-wrap gap-2">
+                <span *ngFor="let eq of hotel.equipementsHotel.split(',')" class="badge bg-light text-dark border">
+                  {{ eq.trim() }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglet Chambres -->
+    <div class="tab-pane fade" id="rooms" role="tabpanel" aria-labelledby="rooms-tab">
+      <div *ngIf="hotel.chambres?.length; else noRooms">
+        <div class="row g-4">
+          <div *ngFor="let ch of hotel.chambres" class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 room-card">
+              <div class="position-relative">
+                <img
+                  [src]="ch.allImageUrls && ch.allImageUrls.length > 0 ? ch.allImageUrls[0] : 'assets/images/hotel-placeholder.jpg'"
+                  class="card-img-top room-img" alt="Chambre {{ ch.numero }}" style="height: 200px; object-fit: cover;">
+                <div class="position-absolute top-0 start-0 m-2">
+                  <span class="badge bg-dark bg-opacity-75">{{ ch.typeChambre }}</span>
+                </div>
+                <div class="position-absolute top-0 end-0 m-2">
+                  <span class="badge" [class.bg-success]="ch.disponible" [class.bg-danger]="!ch.disponible">
+                    {{ ch.disponible ? 'Disponible' : 'Occupée' }}
+                  </span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h5 class="card-title mb-0">Chambre n°{{ ch.numero }}</h5>
+                  <span class="text-primary fw-bold">{{ ch.prixNuit }} MRU</span>
+                </div>
+                <p class="text-muted small mb-2">
+                  <i class="bi bi-people me-1"></i> Jusqu'à {{ ch.capacite }} personnes
+                </p>
+                <p class="card-text small text-truncate-2">{{ ch.description || 'Aucune description' }}</p>
+
+              </div>
+
+              <div class="d-flex gap-2">
+                <button (click)="viewRoomDetails(ch)" class="btn btn-outline-primary rounded-pill flex-grow-1">
+                  Voir détails
+                </button>
+                <button *ngIf="userRole !== 'ROLE_ADMIN' && userRole !== 'ROLE_PARTENAIRE'" (click)="bookRoom(ch)"
+                  class="btn btn-primary rounded-pill flex-grow-1">
+                  Réserver
+                </button>
+              </div>
+              <div *ngIf="userRole === 'ROLE_ADMIN' || userRole === 'ROLE_PARTENAIRE'" class="btn-group w-100">
+                <a [routerLink]="['/chambre/edit', ch.id]" class="btn btn-sm btn-outline-warning">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteChambre(ch.id)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ng-template #noRooms>
+      <div class="text-center py-5">
+        <i class="bi bi-door-closed display-1 text-muted opacity-25"></i>
+        <h5 class="mt-3">Aucune chambre disponible</h5>
+        <p *ngIf="userRole === 'ROLE_ADMIN' || userRole === 'ROLE_PARTENAIRE'">
+          <a [routerLink]="['/chambre/add', hotel.id]" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Ajouter une chambre
+          </a>
+        </p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Onglet Services & Équipements -->
+  <div class="tab-pane fade" id="services" role="tabpanel" aria-labelledby="services-tab">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card mb-4 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">
+              <i class="bi bi-check-circle text-success me-2"></i>Services inclus
+            </h5>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item"><i class="bi bi-check text-success me-2"></i>Petit-déjeuner buffet</li>
+              <li class="list-group-item"><i class="bi bi-check text-success me-2"></i>WiFi haute vitesse</li>
+              <li class="list-group-item"><i class="bi bi-check text-success me-2"></i>Service de chambre 24/7</li>
+              <li class="list-group-item"><i class="bi bi-check text-success me-2"></i>Parking sécurisé gratuit</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">
+              <i class="bi bi-plus-circle text-primary me-2"></i>Services supplémentaires
+            </h5>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item"><i class="bi bi-plus text-primary me-2"></i>SPA et centre de bien-être</li>
+              <li class="list-group-item"><i class="bi bi-plus text-primary me-2"></i>Location de voiture</li>
+              <li class="list-group-item"><i class="bi bi-plus text-primary me-2"></i>Excursions touristiques</li>
+              <li class="list-group-item"><i class="bi bi-plus text-primary me-2"></i>Salle de conférence</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onglet Avis -->
+  <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <div class="card text-center shadow-sm">
+          <div class="card-body">
+            <h2 class="display-4 text-warning">4.5</h2>
+            <div class="star-rating mb-3">
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-fill text-warning"></i>
+              <i class="bi bi-star-half text-warning"></i>
+            </div>
+            <p class="text-muted">Note moyenne basée sur 124 avis</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title mb-4">Derniers avis</h5>
+            <div class="review mb-4">
+              <div class="d-flex justify-content-between mb-2">
+                <div>
+                  <strong>Ahmed Benani</strong>
+                  <div class="star-rating">
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                  </div>
+                </div>
+                <small class="text-muted">25 Décembre 2025</small>
+              </div>
+              <p>Excellent séjour ! Personnel très accueillant, chambres propres et confortables.</p>
+            </div>
+            <div class="review mb-4">
+              <div class="d-flex justify-content-between mb-2">
+                <div>
+                  <strong>Fatima Zahra</strong>
+                  <div class="star-rating">
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star text-warning"></i>
+                  </div>
+                </div>
+                <small class="text-muted">20 Décembre 2025</small>
+              </div>
+              <p>Très bon rapport qualité-prix. Le petit-déjeuner était délicieux.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

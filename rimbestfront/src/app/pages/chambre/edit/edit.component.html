@@ -1,0 +1,363 @@
+<!-- ============================================================
+  CHAMBRE EDIT — Formulaire Premium Complet
+  ============================================================ -->
+
+<div class="row justify-content-center">
+  <div class="col-xl-10">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 animate-fadeInUp">
+      <div>
+        <h1 class="h3 fw-bold text-main mb-1">
+          <i class="bi bi-door-open me-2 text-primary"></i>
+          Modifier la Chambre
+          <span *ngIf="chambre" class="text-gradient ms-2">{{ chambre.numero }}</span>
+        </h1>
+        <p class="text-muted mb-0 small">Mettez à jour les informations de la chambre. Seuls les champs modifiés seront
+          enregistrés.</p>
+      </div>
+      <a *ngIf="chambre?.hotelId" [routerLink]="['/chambre/list', chambre!.hotelId]"
+        class="btn btn-outline-secondary rounded-pill px-4">
+        <i class="bi bi-arrow-left me-1"></i> Retour
+      </a>
+    </div>
+
+    <!-- Alerts -->
+    <div *ngIf="errorMsg" class="alert d-flex align-items-center gap-2 border-0 rounded-3 mb-4"
+      style="background:rgba(220,38,38,.08);color:#b91c1c;border-left:4px solid #ef4444 !important;">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMsg }}</span>
+    </div>
+    <div *ngIf="okMsg" class="alert d-flex align-items-center gap-2 border-0 rounded-3 mb-4"
+      style="background:rgba(5,150,105,.08);color:#047857;border-left:4px solid #10b981 !important;">
+      <i class="bi bi-check-circle-fill fs-5"></i>
+      <span>{{ okMsg }}</span>
+    </div>
+
+    <!-- Skeleton loader -->
+    <div *ngIf="loading && !chambre" class="premium-card p-5 text-center">
+      <div class="spinner-border text-primary mb-3" role="status"></div>
+      <p class="text-muted">Chargement de la chambre...</p>
+    </div>
+
+    <!-- FORM -->
+    <form [formGroup]="form" (ngSubmit)="submit()" *ngIf="!loading || chambre">
+
+      <!-- ── Section 1 : Informations de Base ── -->
+      <div class="premium-card mb-4">
+        <div class="p-4 border-bottom" style="border-color: rgba(14,165,233,.08) !important;">
+          <h5 class="section-title mb-0">
+            <i class="bi bi-info-circle text-primary"></i>
+            Informations de Base
+          </h5>
+        </div>
+        <div class="p-4">
+          <div class="row g-4">
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Numéro de chambre</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-hash"></i></span>
+                <input type="text" class="form-control" formControlName="numero" placeholder="Ex: 101, A-12">
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Type de chambre</label>
+              <select class="form-select" formControlName="type">
+                <option value="SINGLE">🛏️ Single</option>
+                <option value="DOUBLE">🛏️🛏️ Double</option>
+                <option value="SUITE">✨ Suite</option>
+                <option value="FAMILLE">👨‍👩‍👧 Famille</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Statut de disponibilité</label>
+              <select class="form-select" formControlName="statutNettoyage">
+                <option value="PROPRE">✅ Propre</option>
+                <option value="EN_NETTOYAGE">🧹 En nettoyage</option>
+                <option value="EN_MAINTENANCE">🔧 En maintenance</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">Capacité (personnes)</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-people"></i></span>
+                <input type="number" class="form-control" formControlName="capacite" min="1" max="20">
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">Superficie (m²)</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-rulers"></i></span>
+                <input type="number" class="form-control" formControlName="superficie" min="0">
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">Nombre de lits</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-moon"></i></span>
+                <input type="number" class="form-control" formControlName="nombreLits" min="1">
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">Type de lits</label>
+              <select class="form-select" formControlName="typeLits">
+                <option value="">— Non spécifié —</option>
+                <option value="SIMPLE">Simple</option>
+                <option value="DOUBLE">Double</option>
+                <option value="KING">King Size</option>
+                <option value="QUEEN">Queen Size</option>
+                <option value="TWIN">Twin (2 lits)</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Vue</label>
+              <select class="form-select" formControlName="vueType">
+                <option value="">— Non spécifiée —</option>
+                <option value="MER">🌊 Vue mer</option>
+                <option value="JARDIN">🌿 Vue jardin</option>
+                <option value="MONTAGNE">⛰️ Vue montagne</option>
+                <option value="PISCINE">🏊 Vue piscine</option>
+                <option value="VILLE">🏙️ Vue ville</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">Description</label>
+              <textarea class="form-control" rows="3" formControlName="description"
+                placeholder="Décrivez la chambre, ses atouts, son ambiance..."></textarea>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Section 2 : Tarification ── -->
+      <div class="premium-card mb-4">
+        <div class="p-4 border-bottom" style="border-color: rgba(14,165,233,.08) !important;">
+          <h5 class="section-title mb-0">
+            <i class="bi bi-cash-coin text-success"></i>
+            Tarification
+          </h5>
+        </div>
+        <div class="p-4">
+          <div class="row g-4">
+
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">Prix par nuit (MRU)</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-moon-stars"></i></span>
+                <input type="number" class="form-control" formControlName="prixParNuit" min="0">
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">Prix weekend (MRU)</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-calendar-weekend"></i></span>
+                <input type="number" class="form-control" formControlName="prixWeekend" min="0" placeholder="Optionnel">
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">Taxe de séjour (MRU)</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-receipt"></i></span>
+                <input type="number" class="form-control" formControlName="taxeSejour" min="0">
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">Dépôt garantie (MRU)</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-shield-check"></i></span>
+                <input type="number" class="form-control" formControlName="depotGarantie" min="0">
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Section 3 : Équipements ── -->
+      <div class="premium-card mb-4">
+        <div class="p-4 border-bottom" style="border-color: rgba(14,165,233,.08) !important;">
+          <h5 class="section-title mb-0">
+            <i class="bi bi-stars text-warning"></i>
+            Équipements & Confort
+          </h5>
+        </div>
+        <div class="p-4">
+          <div class="row g-3 mb-4">
+
+            <div class="col-md-4 col-6">
+              <div class="p-3 rounded-3 d-flex align-items-center gap-3 border"
+                [style.background]="form.value.salleBainPrivee ? 'rgba(14,165,233,.06)' : '#fff'"
+                [style.borderColor]="form.value.salleBainPrivee ? 'rgba(14,165,233,.3)' : 'rgba(0,0,0,.1)'">
+                <input type="checkbox" class="form-check-input" id="salleBain" formControlName="salleBainPrivee"
+                  style="width:20px;height:20px;">
+                <label class="form-check-label fw-medium" for="salleBain">
+                  <i class="bi bi-droplet text-info me-1"></i> Salle de bain privée
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-4 col-6">
+              <div class="p-3 rounded-3 d-flex align-items-center gap-3 border"
+                [style.background]="form.value.climatisation ? 'rgba(14,165,233,.06)' : '#fff'"
+                [style.borderColor]="form.value.climatisation ? 'rgba(14,165,233,.3)' : 'rgba(0,0,0,.1)'">
+                <input type="checkbox" class="form-check-input" id="clim" formControlName="climatisation"
+                  style="width:20px;height:20px;">
+                <label class="form-check-label fw-medium" for="clim">
+                  <i class="bi bi-wind text-primary me-1"></i> Climatisation
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-4 col-6">
+              <div class="p-3 rounded-3 d-flex align-items-center gap-3 border"
+                [style.background]="form.value.television ? 'rgba(14,165,233,.06)' : '#fff'"
+                [style.borderColor]="form.value.television ? 'rgba(14,165,233,.3)' : 'rgba(0,0,0,.1)'">
+                <input type="checkbox" class="form-check-input" id="tv" formControlName="television"
+                  style="width:20px;height:20px;">
+                <label class="form-check-label fw-medium" for="tv">
+                  <i class="bi bi-tv text-dark me-1"></i> Télévision
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-4 col-6">
+              <div class="p-3 rounded-3 d-flex align-items-center gap-3 border"
+                [style.background]="form.value.wifi ? 'rgba(14,165,233,.06)' : '#fff'"
+                [style.borderColor]="form.value.wifi ? 'rgba(14,165,233,.3)' : 'rgba(0,0,0,.1)'">
+                <input type="checkbox" class="form-check-input" id="wifi" formControlName="wifi"
+                  style="width:20px;height:20px;">
+                <label class="form-check-label fw-medium" for="wifi">
+                  <i class="bi bi-wifi text-success me-1"></i> Wi-Fi
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-4 col-6">
+              <div class="p-3 rounded-3 d-flex align-items-center gap-3 border"
+                [style.background]="form.value.minibar ? 'rgba(14,165,233,.06)' : '#fff'"
+                [style.borderColor]="form.value.minibar ? 'rgba(14,165,233,.3)' : 'rgba(0,0,0,.1)'">
+                <input type="checkbox" class="form-check-input" id="minibar" formControlName="minibar"
+                  style="width:20px;height:20px;">
+                <label class="form-check-label fw-medium" for="minibar">
+                  <i class="bi bi-cup-hot me-1" style="color:#7c3aed"></i> Minibar
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-4 col-6">
+              <div class="p-3 rounded-3 d-flex align-items-center gap-3 border"
+                [style.background]="form.value.coffreFort ? 'rgba(14,165,233,.06)' : '#fff'"
+                [style.borderColor]="form.value.coffreFort ? 'rgba(14,165,233,.3)' : 'rgba(0,0,0,.1)'">
+                <input type="checkbox" class="form-check-input" id="coffre" formControlName="coffreFort"
+                  style="width:20px;height:20px;">
+                <label class="form-check-label fw-medium" for="coffre">
+                  <i class="bi bi-safe me-1" style="color:#d97706"></i> Coffre-fort
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-4 col-6">
+              <div class="p-3 rounded-3 d-flex align-items-center gap-3 border"
+                [style.background]="form.value.disponible ? 'rgba(5,150,105,.06)' : 'rgba(220,38,38,.04)'"
+                [style.borderColor]="form.value.disponible ? 'rgba(5,150,105,.3)' : 'rgba(220,38,38,.2)'">
+                <input type="checkbox" class="form-check-input" id="dispo" formControlName="disponible"
+                  style="width:20px;height:20px;">
+                <label class="form-check-label fw-medium" for="dispo">
+                  <i class="bi bi-calendar-check text-success me-1"></i> Disponible à la réservation
+                </label>
+              </div>
+            </div>
+
+          </div>
+
+          <div>
+            <label class="form-label fw-semibold">Équipements supplémentaires</label>
+            <textarea class="form-control" rows="2" formControlName="equipementsChambre"
+              placeholder="Ex: Peignoir, Sèche-cheveux, Machine à café, Accès plage..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Section 4 : Images ── -->
+      <div class="premium-card mb-4">
+        <div class="p-4 border-bottom" style="border-color: rgba(14,165,233,.08) !important;">
+          <h5 class="section-title mb-0">
+            <i class="bi bi-images text-primary"></i>
+            Photos de la Chambre
+          </h5>
+        </div>
+        <div class="p-4">
+
+          <!-- Images existantes -->
+          <div *ngIf="existingImages.length > 0" class="mb-4">
+            <p class="fw-semibold mb-3 text-muted small text-uppercase ls-wide">Photos actuelles</p>
+            <div class="row g-3">
+              <div *ngFor="let img of existingImages; let i = index" class="col-lg-3 col-md-4 col-6">
+                <div class="position-relative rounded-3 overflow-hidden shadow-sm" style="aspect-ratio: 4/3;">
+                  <img [src]="img.url" class="w-100 h-100" style="object-fit: cover;" alt="Photo chambre">
+                  <button type="button" class="btn btn-sm position-absolute top-0 end-0 m-2"
+                    style="background:rgba(220,38,38,.9);color:white;border:none;border-radius:50%;width:28px;height:28px;padding:0;"
+                    (click)="removeExistingImage(i)" title="Supprimer cette photo">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Uploader -->
+          <div class="border-2 rounded-3 p-4 text-center"
+            style="border: 2px dashed rgba(14,165,233,.3); background: rgba(14,165,233,.02); cursor: pointer;"
+            (click)="fileInput.click()">
+            <input #fileInput type="file" accept="image/*" multiple class="d-none" (change)="onFileSelected($event)">
+            <i class="bi bi-cloud-upload fs-1 text-primary mb-2 d-block"></i>
+            <p class="fw-semibold text-main mb-1">Ajouter de nouvelles photos</p>
+            <p class="text-muted small mb-0">Cliquez ici ou glissez vos images • PNG, JPG, WEBP • Max 5 Mo par image</p>
+          </div>
+
+          <!-- Prévisualisation nouvelles images -->
+          <div *ngIf="imagePreviews.length > 0" class="mt-3">
+            <p class="fw-semibold mb-3 text-muted small text-uppercase ls-wide">Nouvelles photos à ajouter</p>
+            <div class="row g-3">
+              <div *ngFor="let p of imagePreviews" class="col-lg-3 col-md-4 col-6">
+                <div class="rounded-3 overflow-hidden shadow-sm border border-success" style="aspect-ratio: 4/3;">
+                  <img [src]="p" class="w-100 h-100" style="object-fit: cover;" alt="Aperçu">
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Boutons ── -->
+      <div class="d-flex justify-content-between align-items-center gap-3 py-2">
+        <a *ngIf="chambre?.hotelId" [routerLink]="['/chambre/list', chambre!.hotelId]"
+          class="btn btn-outline-secondary rounded-pill px-4">
+          <i class="bi bi-x-lg me-1"></i> Annuler
+        </a>
+        <button type="submit" class="btn btn-premium-gradient rounded-pill px-5 py-2 shadow fw-bold"
+          [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!loading" class="bi bi-save me-2"></i>
+          {{ loading ? 'Enregistrement...' : 'Enregistrer les modifications' }}
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>

@@ -1,0 +1,131 @@
+<div *ngIf="errorMsg" class="alert alert-danger py-2">{{ errorMsg }}</div>
+<div *ngIf="loading" class="alert alert-info py-2">
+  <i class="bi bi-arrow-repeat me-2"></i>Chargement...
+</div>
+
+<div *ngIf="reservation && !loading">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="display-6">
+        <i class="bi bi-calendar-check text-primary me-2"></i>Réservation #{{ reservation.id }}
+      </h1>
+      <p class="text-muted mb-0">
+        Hôtel: <span class="fw-semibold">{{ reservation.hotelNom || ('#' + reservation.hotelId) }}</span> —
+        Chambre: <span class="fw-semibold">{{ reservation.chambreNumero || ('#' + reservation.chambreId) }}</span>
+      </p>
+    </div>
+
+    <div class="d-flex gap-2 d-print-none">
+      <button class="btn btn-outline-primary" (click)="print()">
+        <i class="bi bi-printer me-1"></i>Imprimer
+      </button>
+      <a class="btn btn-outline-secondary" routerLink="/reservations/list">
+        <i class="bi bi-arrow-left me-1"></i>Retour
+      </a>
+
+      <button *ngIf="canManage() && reservation.statut === 'EN_ATTENTE'" class="btn btn-success"
+        (click)="setStatus('CONFIRMEE')">
+        <i class="bi bi-check-circle me-1"></i>Valider
+      </button>
+
+      <button *ngIf="canManage() && reservation.statut === 'EN_ATTENTE'" class="btn btn-danger"
+        (click)="setStatus('REFUSEE')">
+        <i class="bi bi-x-circle me-1"></i>Refuser
+      </button>
+
+      <button *ngIf="auth.hasRole('CLIENT') && reservation.statut === 'EN_ATTENTE'" class="btn btn-secondary"
+        (click)="setStatus('ANNULEE')">
+        <i class="bi bi-slash-circle me-1"></i>Annuler
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm h-100 border-0 border-start border-primary border-4">
+        <div class="card-body">
+          <h6 class="card-title text-primary"><i class="bi bi-calendar-range me-2"></i>Séjour</h6>
+          <hr>
+          <div class="mb-2">
+            <div class="text-muted small">Arrivée</div>
+            <div class="fw-semibold">{{ reservation.dateDebut }}</div>
+          </div>
+          <div>
+            <div class="text-muted small">Départ</div>
+            <div class="fw-semibold">{{ reservation.dateFin }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm h-100 border-0 border-start border-success border-4">
+        <div class="card-body">
+          <h6 class="card-title text-success"><i class="bi bi-person me-2"></i>Client</h6>
+          <hr>
+          <div class="fw-semibold mb-1">{{ reservation.clientNom || 'Non renseigné' }}</div>
+          <div class="text-muted small mb-1"><i class="bi bi-envelope me-1"></i>{{ reservation.clientEmail || '---' }}
+          </div>
+          <div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ reservation.clientTelephone || '---' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm h-100 border-0 border-start border-info border-4">
+        <div class="card-body">
+          <h6 class="card-title text-info"><i class="bi bi-info-circle me-2"></i>Détails Réservation</h6>
+          <hr>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted small">Statut</span>
+            <span class="badge" [class.bg-warning]="reservation.statut === 'EN_ATTENTE'"
+              [class.bg-success]="reservation.statut === 'CONFIRMEE'"
+              [class.bg-danger]="reservation.statut === 'ANNULEE' || reservation.statut === 'REFUSEE'"
+              [class.bg-primary]="reservation.statut === 'TERMINEE'">{{ reservation.statut }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted small">Personnes</span>
+            <span class="fw-semibold">{{ reservation.nbPersonnes || 1 }} <i class="bi bi-people"></i></span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted small">Type de chambre</span>
+            <span class="fw-semibold">{{ reservation.chambreType || 'Standard' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 mt-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+          <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Paiement et Facturation</h5>
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+              <span class="text-muted d-flex align-items-center"><i class="bi bi-credit-card me-2"></i>Mode de
+                paiement</span>
+              <span class="fw-semibold">{{ reservation.modePaiement || 'Sur place' }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+              <span class="text-muted d-flex align-items-center">
+                <i class="bi bi-cash-coin me-2"></i>Statut du paiement
+              </span>
+              <span class="badge"
+                [class.bg-success]="reservation.statut === 'CONFIRMEE' || reservation.statut === 'TERMINEE'"
+                [class.bg-warning]="reservation.statut === 'EN_ATTENTE'"
+                [class.bg-danger]="reservation.statut === 'ANNULEE' || reservation.statut === 'REFUSEE'">
+                {{ getPaiementStatutTexte(reservation.statut) }}
+              </span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center py-3 bg-light">
+              <span class="fw-bold d-flex align-items-center"><i class="bi bi-wallet2 me-2"></i>Montant Total</span>
+              <span class="fs-5 fw-bold text-primary">{{ reservation.prixTotal ?? '0' }} $</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

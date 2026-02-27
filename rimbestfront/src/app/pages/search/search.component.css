@@ -1,0 +1,37 @@
+.recommendation-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.recommendation-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, .1) !important;
+}
+
+.transition-hover {
+    transition: all 0.2s ease-in-out;
+}
+
+.transition-hover:hover {
+    filter: brightness(0.95);
+}
+
+.text-truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.animate__animated {
+    animation-duration: 0.8s;
+}
+
+.rounded-4 {
+    border-radius: 1rem !important;
+}
+
+.glass-header {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(10px);
+}

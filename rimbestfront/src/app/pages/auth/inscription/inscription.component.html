@@ -1,0 +1,126 @@
+<div
+  class="auth-wrapper d-flex align-items-center justify-content-center min-vh-100 py-5 animate__animated animate__fadeIn">
+  <!-- Interactive Background Particles -->
+  <div class="auth-circles">
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2" style="background: var(--secondary-color); opacity: 0.05;"></div>
+  </div>
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-9 col-lg-7">
+        <div class="premium-card glass-effect border-0 shadow-2xl p-2 animate__animated animate__zoomIn">
+          <div class="card-body p-4 p-md-5">
+            <div class="text-center mb-5">
+              <div class="bg-premium-gradient d-inline-flex p-3 rounded-4 shadow-lg mb-3">
+                <i class="bi bi-person-plus-fill fs-1 text-white"></i>
+              </div>
+              <h2 class="fw-bold text-main">Rejoignez l'Aventure</h2>
+              <p class="text-muted">Créez votre compte <span class="text-primary fw-bold">RIMBestStay</span> en quelques
+                secondes</p>
+            </div>
+
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+              <div class="row">
+                <div class="col-md-6 mb-4">
+                  <label for="nom" class="form-label small fw-bold text-uppercase ls-wide text-muted">Nom
+                    Complet</label>
+                  <div class="input-group input-group-lg shadow-sm">
+                    <span class="input-group-text bg-white border-end-0 text-primary"><i
+                        class="bi bi-person"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-0" id="nom" formControlName="nom"
+                      placeholder="Ex: Ahmed Benani">
+                  </div>
+                  <div *ngIf="form.get('nom')?.invalid && form.get('nom')?.touched" class="text-danger mt-1">
+                    <small>Le nom est requis pour personnaliser votre espace.</small>
+                  </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                  <label for="email" class="form-label small fw-bold text-uppercase ls-wide text-muted">Adresse
+                    Email</label>
+                  <div class="input-group input-group-lg shadow-sm">
+                    <span class="input-group-text bg-white border-end-0 text-primary"><i
+                        class="bi bi-envelope"></i></span>
+                    <input type="email" class="form-control border-start-0 ps-0" id="email" formControlName="email"
+                      placeholder="votre@email.com">
+                  </div>
+                  <div *ngIf="form.get('email')?.invalid && form.get('email')?.touched" class="text-danger mt-1">
+                    <small *ngIf="form.get('email')?.errors?.['required']">L'email est nécessaire pour se
+                      connecter.</small>
+                    <small *ngIf="form.get('email')?.errors?.['email']">Format email invalide.</small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-4">
+                  <label for="motDePasse" class="form-label small fw-bold text-uppercase ls-wide text-muted">Mot de
+                    passe</label>
+                  <div class="input-group input-group-lg shadow-sm">
+                    <span class="input-group-text bg-white border-end-0 text-primary"><i class="bi bi-lock"></i></span>
+                    <input type="password" class="form-control border-start-0 ps-0" id="motDePasse"
+                      formControlName="motDePasse" placeholder="Minimum 6 caractères">
+                  </div>
+                  <div *ngIf="form.get('motDePasse')?.invalid && form.get('motDePasse')?.touched"
+                    class="text-danger mt-1">
+                    <small *ngIf="form.get('motDePasse')?.errors?.['required']">Saisissez un mot de passe
+                      robuste.</small>
+                    <small *ngIf="form.get('motDePasse')?.errors?.['minlength']">Trop court (min. 6 caractères).</small>
+                  </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                  <label for="telephone"
+                    class="form-label small fw-bold text-uppercase ls-wide text-muted">Téléphone</label>
+                  <div class="input-group input-group-lg shadow-sm">
+                    <span class="input-group-text bg-white border-end-0 text-primary"><i class="bi bi-phone"></i></span>
+                    <input type="tel" class="form-control border-start-0 ps-0" id="telephone"
+                      formControlName="telephone" placeholder="+212 ...">
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label for="adresse" class="form-label small fw-bold text-uppercase ls-wide text-muted">Adresse
+                  (Optionnelle)</label>
+                <div class="input-group input-group-lg shadow-sm">
+                  <span class="input-group-text bg-white border-end-0 text-primary"><i class="bi bi-geo-alt"></i></span>
+                  <textarea class="form-control border-start-0 ps-0" id="adresse" formControlName="adresse" rows="1"
+                    placeholder="Votre ville ou adresse précise"></textarea>
+                </div>
+              </div>
+
+              <div class="mb-4 form-check bg-light p-3 rounded-4 border">
+                <input type="checkbox" class="form-check-input ms-0 me-2" id="conditions" formControlName="conditions">
+                <label class="form-check-label small text-muted" for="conditions">
+                  J'accepte les <a href="#" class="text-primary text-decoration-none fw-bold">conditions
+                    d'utilisation</a> et la politique de confidentialité.
+                </label>
+                <div *ngIf="form.get('conditions')?.invalid && form.get('conditions')?.touched"
+                  class="text-danger mt-1">
+                  <small>L'acceptation des conditions est obligatoire.</small>
+                </div>
+              </div>
+
+              <div class="d-grid mb-4">
+                <button type="submit"
+                  class="btn btn-premium-gradient btn-lg rounded-pill py-3 fw-bold text-white shadow-lg border-0"
+                  [disabled]="form.invalid">
+                  <i class="bi bi-check-circle-fill me-2"></i>Finaliser mon Inscription
+                </button>
+              </div>
+            </form>
+
+            <div class="text-center">
+              <p class="small text-muted mb-3">Déjà un compte ?</p>
+              <a routerLink="/login" class="btn btn-outline-primary btn-sm rounded-pill px-4 py-2 fw-bold">
+                <i class="bi bi-box-arrow-in-right me-1"></i>Se Connecter maintenant
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

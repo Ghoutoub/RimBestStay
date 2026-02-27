@@ -1,0 +1,192 @@
+<div class="d-flex justify-content-between align-items-center mb-5 animate__animated animate__fadeIn">
+  <div>
+    <h1 class="display-5 fw-bold text-gradient mb-2">
+      <i class="bi bi-person-heart me-2"></i>Mon Espace Client
+    </h1>
+    <p class="lead text-secondary">
+      Bonjour, <span class="fw-bold text-primary">{{ userNom }}</span>. Prêt pour votre prochaine aventure ?
+    </p>
+  </div>
+  <div class="glass-effect p-2 rounded-pill shadow-sm">
+    <button class="btn btn-outline-danger btn-sm rounded-pill px-4" (click)="logout()">
+      <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+    </button>
+  </div>
+</div>
+
+<!-- Statistiques Client (Premium Cards) -->
+<div class="row mb-5 g-4 animate__animated animate__fadeInUp">
+  <div class="col-xl-3 col-md-6">
+    <div class="premium-card h-100 border-start border-primary border-4">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="text-uppercase small fw-bold text-muted mb-2 ls-wide">Réservations</h6>
+            <h2 class="mb-0 fw-bold">{{ stats.totalReservations || 0 }}</h2>
+          </div>
+          <div class="bg-primary bg-opacity-10 p-3 rounded-4">
+            <i class="bi bi-calendar2-check-fill fs-3 text-primary"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6">
+    <div class="premium-card h-100 border-start border-warning border-4">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="text-uppercase small fw-bold text-muted mb-2 ls-wide">En attente</h6>
+            <h2 class="mb-0 fw-bold">{{ stats.pendingReservations || 0 }}</h2>
+          </div>
+          <div class="bg-warning bg-opacity-10 p-3 rounded-4">
+            <i class="bi bi-hourglass-split fs-3 text-warning"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6">
+    <div class="premium-card h-100 border-start border-info border-4">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="text-uppercase small fw-bold text-muted mb-2 ls-wide">Favoris</h6>
+            <h2 class="mb-0 fw-bold">---</h2>
+          </div>
+          <div class="bg-info bg-opacity-10 p-3 rounded-4">
+            <i class="bi bi-heart-fill fs-3 text-info"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6">
+    <div class="premium-card h-100 border-start border-secondary border-4">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="text-uppercase small fw-bold text-muted mb-2 ls-wide">Notifications</h6>
+            <h2 class="mb-0 fw-bold">---</h2>
+          </div>
+          <div class="bg-secondary bg-opacity-10 p-3 rounded-4">
+            <i class="bi bi-bell-fill fs-3 text-secondary"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Actions Rapides (Premium Gradient) -->
+<div class="row mb-5">
+  <div class="col-12">
+    <div class="premium-card bg-premium-gradient border-0 text-white p-2">
+      <div class="card-body">
+        <h5 class="mb-4 px-2"><i class="bi bi-lightning-charge me-2"></i>Actions Rapides</h5>
+        <div class="row g-3">
+          <div class="col-lg-3 col-md-6">
+            <a routerLink="/hotel/list"
+              class="btn btn-glass-light w-100 h-100 py-4 border-0 shadow-sm d-flex flex-column align-items-center justify-content-center">
+              <i class="bi bi-search-heart fs-2 mb-2"></i>
+              <span class="fw-bold">Réserver</span>
+            </a>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <a routerLink="/search"
+              class="btn btn-glass-light w-100 h-100 py-4 border-0 shadow-sm d-flex flex-column align-items-center justify-content-center">
+              <i class="bi bi-magic fs-2 mb-2"></i>
+              <span class="fw-bold">Recherche avancée</span>
+            </a>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <a routerLink="/reservations/client"
+              class="btn btn-glass-light w-100 h-100 py-4 border-0 shadow-sm d-flex flex-column align-items-center justify-content-center">
+              <i class="bi bi-list-stars fs-2 mb-2"></i>
+              <span class="fw-bold">Mes Séjours</span>
+            </a>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <a routerLink="/profile"
+              class="btn btn-glass-light w-100 h-100 py-4 border-0 shadow-sm d-flex flex-column align-items-center justify-content-center">
+              <i class="bi bi-person-workspace fs-2 mb-2"></i>
+              <span class="fw-bold">Mon Profil</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recommandations & Activité -->
+<div class="row g-4 mb-5">
+  <div class="col-lg-8">
+    <div class="premium-card h-100 border-0">
+      <div class="card-header bg-white py-4 border-0">
+        <div class="d-flex justify-content-between align-items-center px-2">
+          <h5 class="mb-0 fw-bold text-main">
+            <i class="bi bi-stars text-primary me-2"></i>Sélections pour vous
+          </h5>
+          <a routerLink="/hotel/list" class="btn btn-link text-primary text-decoration-none fw-bold small">
+            Tout voir <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+      </div>
+      <div class="card-body p-4 pt-0">
+        <div class="row g-3">
+          <div class="col-md-6" *ngFor="let hotel of recommendedHotels">
+            <div class="card h-100 border-0 bg-light rounded-4 overflow-hidden position-relative transition-hover">
+              <div class="card-body p-3">
+                <div class="d-flex justify-content-between mb-2">
+                  <h6 class="fw-bold mb-0 text-truncate">{{ hotel.nom }}</h6>
+                  <span class="badge bg-warning text-dark">{{ hotel.etoiles }}★</span>
+                </div>
+                <p class="small text-muted mb-3"><i class="bi bi-geo-alt me-1"></i>{{ hotel.ville }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="text-primary fw-bold small">Dès {{ hotel.minPrice }} MRU</span>
+                  <a [routerLink]="['/hotel/details', hotel.id]" class="btn btn-primary btn-sm rounded-pill px-3">
+                    Explorer
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="premium-card h-100 border-0">
+      <div class="card-header bg-white py-4 border-0">
+        <h5 class="mb-0 fw-bold text-main">
+          <i class="bi bi-receipt text-primary me-2"></i>Dernier Séjour
+        </h5>
+      </div>
+      <div class="card-body p-4 pt-0">
+        <div *ngIf="recentReservations.length > 0; else noRes"
+          class="bg-primary bg-opacity-10 rounded-4 p-4 text-center">
+          <i class="bi bi-geo-fill text-primary display-4 mb-3 d-block"></i>
+          <h5 class="fw-bold mb-1">{{ recentReservations[0].hotelNom }}</h5>
+          <p class="small text-muted mb-3">{{ recentReservations[0].dateArrivee }} - {{ recentReservations[0].dateDepart
+            }}</p>
+          <div class="badge bg-primary px-4 py-2 rounded-pill mb-3">{{ recentReservations[0].statut }}</div>
+          <a [routerLink]="['/reservation/details', recentReservations[0].id]"
+            class="btn btn-outline-primary btn-sm w-100 rounded-pill mt-3">
+            Détails du voyage
+          </a>
+        </div>
+        <ng-template #noRes>
+          <div class="text-center py-5 opacity-50">
+            <i class="bi bi-luggage display-1 d-block mb-3"></i>
+            <p>Hâte de votre prochain départ ?</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>

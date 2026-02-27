@@ -1,0 +1,129 @@
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+      <div class="card-header bg-primary py-3">
+        <h4 class="mb-0 text-white"><i class="bi bi-pencil-square me-2"></i>Modifier l'hôtel</h4>
+      </div>
+      <div class="card-body p-4">
+        <form [formGroup]="hotelForm" (ngSubmit)="onSubmit()">
+          <div class="row g-4">
+            <!-- Informations de base -->
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Nom de l'hôtel</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="bi bi-building"></i></span>
+                <input type="text" class="form-control" formControlName="nom" placeholder="Ex: Grand Plaza Hotel">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Classification</label>
+              <select class="form-select" formControlName="etoiles">
+                <option value="1">1 Étoile</option>
+                <option value="2">2 Étoiles</option>
+                <option value="3">3 Étoiles</option>
+                <option value="4">4 Étoiles</option>
+                <option value="5">5 Étoiles</option>
+              </select>
+            </div>
+
+            <!-- Contact -->
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Email</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                <input type="email" class="form-control" formControlName="email" placeholder="contact@hotel.com">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Téléphone</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
+                <input type="text" class="form-control" formControlName="telephone" placeholder="+222 ...">
+              </div>
+            </div>
+
+            <!-- Localisation -->
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Ville</label>
+              <input type="text" class="form-control" formControlName="ville" placeholder="Ville">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Pays</label>
+              <input type="text" class="form-control" formControlName="pays" placeholder="Pays">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Adresse</label>
+              <input type="text" class="form-control" formControlName="adresse" placeholder="Quartier, Rue...">
+            </div>
+
+            <!-- Description -->
+            <div class="col-12">
+              <label class="form-label fw-bold">Description</label>
+              <textarea class="form-control" formControlName="description" rows="4"
+                placeholder="Décrivez les atouts de votre établissement..."></textarea>
+            </div>
+
+            <!-- Équipements -->
+            <div class="col-12">
+              <label class="form-label fw-bold">Équipements (séparés par des virgules)</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="bi bi-tags"></i></span>
+                <input type="text" class="form-control" formControlName="equipementsHotel"
+                  placeholder="WIFI, Piscine, Parking, SPA, Restaurant...">
+              </div>
+              <div class="form-text">Listez les services principaux offerts par l'hôtel.</div>
+            </div>
+
+            <!-- Gestion des images existantes -->
+            <div class="col-12 mt-4" *ngIf="existingImages.length > 0">
+              <label class="form-label fw-bold">Images actuelles</label>
+              <div class="row g-2">
+                <div class="col-md-3 col-6" *ngFor="let img of existingImages; let i = index">
+                  <div class="position-relative rounded overflow-hidden shadow-sm border group">
+                    <img [src]="img.url" class="img-fluid w-100" style="height: 120px; object-fit: cover;">
+                    <button type="button" (click)="removeExistingImage(i)"
+                      class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle p-1"
+                      title="Supprimer cette image">
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ajouter de nouvelles images -->
+            <div class="col-12 mt-4">
+              <label class="form-label fw-bold">Ajouter de nouvelles photos</label>
+              <div class="input-group">
+                <input type="file" class="form-control" (change)="onFileSelected($event)" accept="image/*" multiple>
+                <span class="input-group-text bg-light"><i class="bi bi-images"></i></span>
+              </div>
+              <div class="form-text">Vous pouvez sélectionner plusieurs fichiers à la fois.</div>
+            </div>
+
+            <div class="col-12 mb-3">
+              <div class="form-check form-switch p-3 bg-light rounded border">
+                <input class="form-check-input ms-0 me-2" type="checkbox" formControlName="actif" id="actifSwitch">
+                <label class="form-check-label fw-bold" for="actifSwitch">Rendre cet hôtel visible aux clients</label>
+              </div>
+            </div>
+
+            <div class="col-12 text-end mt-4">
+              <a routerLink="/hotel/list"
+                class="btn btn-outline-secondary btn-lg rounded-pill me-2 px-4 text-decoration-none">
+                Annuler
+              </a>
+              <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow">
+                <i class="bi bi-save me-2"></i>Enregistrer les modifications
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

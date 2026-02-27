@@ -1,0 +1,140 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="display-6">
+      <i class="bi bi-graph-up text-primary me-2"></i>Statistiques Réservations
+    </h1>
+    <p class="text-muted mb-0">Vue globale (Admin / Partenaire)</p>
+  </div>
+
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" routerLink="/reservations">
+      <i class="bi bi-arrow-left me-1"></i>Retour
+    </a>
+    <button class="btn btn-primary" type="button" (click)="load()" [disabled]="loading">
+      <i class="bi bi-arrow-repeat me-1"></i>Actualiser
+    </button>
+  </div>
+</div>
+
+<div *ngIf="errorMsg" class="alert alert-danger py-2">{{ errorMsg }}</div>
+<div *ngIf="loading" class="alert alert-info py-2">
+  <i class="bi bi-arrow-repeat me-2"></i>Chargement...
+</div>
+
+<div *ngIf="data && !loading">
+  <!-- Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="text-muted small">Total</div>
+          <div class="fs-3 fw-bold">{{ data.total }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm border-warning">
+        <div class="card-body">
+          <div class="text-muted small">En attente</div>
+          <div class="fs-3 fw-bold text-warning">{{ data.enAttente }}</div>
+          <div class="text-muted small">{{ pct(data.enAttente) }}%</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm border-success">
+        <div class="card-body">
+          <div class="text-muted small">Confirmées</div>
+          <div class="fs-3 fw-bold text-success">{{ data.confirmees }}</div>
+          <div class="text-muted small">{{ pct(data.confirmees) }}%</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm border-danger">
+        <div class="card-body">
+          <div class="text-muted small">Refusées</div>
+          <div class="fs-3 fw-bold text-danger">{{ data.refusees }}</div>
+          <div class="text-muted small">{{ pct(data.refusees) }}%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Répartition (progress bars) -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-white">
+      <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Répartition</h5>
+    </div>
+    <div class="card-body">
+      <div class="mb-3">
+        <div class="d-flex justify-content-between">
+          <div>En attente</div>
+          <div class="text-muted">{{ data.enAttente }} ({{ pct(data.enAttente) }}%)</div>
+        </div>
+        <div class="progress">
+          <div class="progress-bar bg-warning" [style.width.%]="pct(data.enAttente)"></div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <div class="d-flex justify-content-between">
+          <div>Confirmées</div>
+          <div class="text-muted">{{ data.confirmees }} ({{ pct(data.confirmees) }}%)</div>
+        </div>
+        <div class="progress">
+          <div class="progress-bar bg-success" [style.width.%]="pct(data.confirmees)"></div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <div class="d-flex justify-content-between">
+          <div>Refusées</div>
+          <div class="text-muted">{{ data.refusees }} ({{ pct(data.refusees) }}%)</div>
+        </div>
+        <div class="progress">
+          <div class="progress-bar bg-danger" [style.width.%]="pct(data.refusees)"></div>
+        </div>
+      </div>
+
+      <div class="mb-0">
+        <div class="d-flex justify-content-between">
+          <div>Annulées</div>
+          <div class="text-muted">{{ data.annulees }} ({{ pct(data.annulees) }}%)</div>
+        </div>
+        <div class="progress">
+          <div class="progress-bar bg-secondary" [style.width.%]="pct(data.annulees)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top hôtels -->
+  <div class="card shadow">
+    <div class="card-header bg-white">
+      <h5 class="mb-0"><i class="bi bi-buildings me-2"></i>Top Hôtels (par réservations)</h5>
+    </div>
+    <div class="card-body">
+      <div *ngIf="!data.topHotels || data.topHotels.length === 0" class="text-muted text-center py-4">
+        Aucun top hôtel (backend ne renvoie pas encore topHotels).
+      </div>
+
+      <div class="table-responsive" *ngIf="data.topHotels && data.topHotels.length > 0">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Hôtel</th>
+              <th>Réservations</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of data.topHotels">
+              <td class="fw-semibold">{{ t.hotelNom }}</td>
+              <td>{{ t.count }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

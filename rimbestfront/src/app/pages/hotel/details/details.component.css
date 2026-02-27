@@ -1,0 +1,80 @@
+.room-card {
+    transition: transform 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.room-card:hover {
+    transform: translateY(-5px);
+}
+
+.room-img {
+    height: 180px;
+    object-fit: cover;
+}
+
+.hotel-header {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #495057;
+    font-weight: 500;
+    padding: 1rem 1.5rem;
+}
+
+.nav-tabs .nav-link.active {
+    color: #764ba2;
+    border-bottom: 3px solid #764ba2;
+}
+/* Amélioration du bouton "Modifier" (glass) */
+.btn-glass-light {
+  background: rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  color: white !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-glass-light:hover {
+  background: rgba(255, 255, 255, 0.4) !important;
+  border-color: white !important;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Amélioration du bouton "Retour" (outline) */
+.btn-outline-light {
+  border-width: 2px !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+}
+.btn-custom-warning {
+  background-color: #fff3cd;  /* jaune très clair */
+  border-color: #ffeeba;
+  color: #000;
+}
+.btn-custom-warning:hover {
+  background-color: #ffe69c;
+  border-color: #ffda6a;
+  color: #000;
+}
+
+/* Effet de survol commun (complète hover-lift) */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2) !important;
+}

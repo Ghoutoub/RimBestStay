@@ -1,0 +1,164 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="display-6">
+      <i class="bi bi-door-closed text-primary me-2"></i>Chambres
+    </h1>
+    <p class="text-muted mb-0">
+      Hôtel :
+      <span class="fw-semibold">{{ hotel?.nom || ('#' + hotelId) }}</span>
+      <span class="ms-2 text-muted">({{ hotel?.ville }}, {{ hotel?.pays }})</span>
+    </p>
+  </div>
+
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" [routerLink]="['/hotel/details', hotelId]">
+      <i class="bi bi-arrow-left me-1"></i>Retour Hôtel
+    </a>
+
+    <a *ngIf="auth.hasAnyRole(['ADMIN','PARTENAIRE'])" class="btn btn-premium-gradient rounded-pill px-4 shadow-sm"
+      [routerLink]="['/chambre/add', hotelId]">
+      <i class="bi bi-plus-circle me-1"></i>Ajouter Chambre
+    </a>
+  </div>
+</div>
+
+<!-- filtres -->
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="onSearch()">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Recherche</label>
+          <input class="form-control" formControlName="search" placeholder="Numéro, type..." />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Type</label>
+          <select class="form-select" formControlName="type">
+            <option value="">Tous</option>
+            <option value="SINGLE">Single</option>
+            <option value="DOUBLE">Double</option>
+            <option value="SUITE">Suite</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Disponibilité</label>
+          <select class="form-select" formControlName="dispo">
+            <option value="">Toutes</option>
+            <option value="true">Disponible</option>
+            <option value="false">Indisponible</option>
+          </select>
+        </div>
+
+        <div class="col-md-1 d-flex align-items-end">
+          <button class="btn btn-primary w-100" [disabled]="loading" type="submit">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+
+        <div class="col-12">
+          <button class="btn btn-outline-secondary" type="button" (click)="clearFilters()" [disabled]="loading">
+            <i class="bi bi-x-circle me-1"></i>Reset
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div *ngIf="errorMsg" class="alert alert-danger py-2">{{ errorMsg }}</div>
+<div *ngIf="loading" class="alert alert-info py-2">
+  <i class="bi bi-arrow-repeat me-2"></i>Chargement...
+</div>
+
+<!-- tableau -->
+<div class="card shadow">
+  <div class="card-header bg-white">
+    <h5 class="mb-0">
+      <i class="bi bi-list me-2"></i>Liste des chambres
+      <span class="badge bg-secondary ms-2">{{ chambres.length }}</span>
+    </h5>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Numéro</th>
+            <th>Type</th>
+            <th>Capacité</th>
+            <th>Prix/Nuit</th>
+            <th>Disponibilité</th>
+            <th *ngIf="auth.hasAnyRole(['ADMIN','PARTENAIRE'])">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let c of chambres">
+            <td class="fw-semibold">{{ c.numero || ('#' + c.id) }}</td>
+            <td>{{ c.type }}</td>
+            <td>{{ c.capacite || '-' }}</td>
+            <td>{{ c.prixParNuit || '-' }}</td>
+            <td>
+              <span class="badge bg-success" *ngIf="c.disponible !== false">
+                <i class="bi bi-check-circle me-1"></i>Disponible
+              </span>
+              <span class="badge bg-danger" *ngIf="c.disponible === false">
+                <i class="bi bi-x-circle me-1"></i>Indisponible
+              </span>
+            </td>
+
+            <td *ngIf="auth.hasAnyRole(['ADMIN','PARTENAIRE'])">
+              <div class="btn-group">
+                <a class="btn btn-sm btn-outline-primary" [routerLink]="['/chambre/details', c.id]">
+                  <i class="bi bi-eye"></i>
+                </a>
+                <a class="btn btn-sm btn-outline-warning" [routerLink]="['/chambre/edit', c.id]">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(c.id)" type="button">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="!loading && chambres.length === 0">
+            <td colspan="6" class="text-center py-5 text-muted">
+              <i class="bi bi-door-closed display-1 opacity-25"></i>
+              <h5 class="mt-3">Aucune chambre</h5>
+              <p>Ajoute une chambre pour cet hôtel.</p>
+              <a *ngIf="auth.hasAnyRole(['ADMIN','PARTENAIRE'])" class="btn btn-primary rounded-pill px-4"
+                [routerLink]="['/chambre/add', hotelId]">
+                <i class="bi bi-plus-circle me-1"></i>Ajouter Chambre
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- pagination -->
+<nav class="mt-4" *ngIf="totalPages > 1">
+  <ul class="pagination justify-content-center">
+    <li class="page-item" [class.disabled]="currentPage === 0">
+      <button class="page-link" (click)="load(currentPage - 1)" [disabled]="currentPage === 0">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+    </li>
+
+    <li class="page-item" *ngFor="let p of pagesArray()" [class.active]="p === currentPage">
+      <button class="page-link" (click)="load(p)">{{ p + 1 }}</button>
+    </li>
+
+    <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+      <button class="page-link" (click)="load(currentPage + 1)" [disabled]="currentPage === totalPages - 1">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </li>
+  </ul>
+</nav>

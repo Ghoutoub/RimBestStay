@@ -1,0 +1,37 @@
+<div class="card shadow">
+  <div class="card-header bg-primary text-white">
+    <h4 class="mb-0"><i class="bi bi-person-circle"></i> Détails de l'utilisateur</h4>
+  </div>
+  <div class="card-body">
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <h6>Nom complet</h6>
+        <p>{{ user?.nom }}</p>
+      </div>
+      <div class="col-md-4">
+        <h6>Email</h6>
+        <p>{{ user?.email }}</p>
+      </div>
+      <div class="col-md-4">
+        <h6>Rôle</h6>
+        <p>{{ user?.roles?.[0]?.name?.replace('ROLE_','') || 'N/A' }}</p>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <h6>Téléphone</h6>
+        <p>{{ user?.telephone }}</p>
+      </div>
+      <div class="col-md-4">
+        <h6>Adresse</h6>
+        <p>{{ user?.adresse }}</p>
+      </div>
+      <div class="col-md-4">
+        <h6>Statut</h6>
+        <p>{{ user?.actif ? 'Actif' : 'Inactif' }}</p>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <h6>Créé le</h6>
+        <p>{{ user?.createdAt | date:'dd/MM/yyyy' }}</p>
