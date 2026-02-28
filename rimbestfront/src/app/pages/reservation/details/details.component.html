@@ -33,10 +33,15 @@
         <i class="bi bi-x-circle me-1"></i>Refuser
       </button>
 
-      <button *ngIf="auth.hasRole('CLIENT') && reservation.statut === 'EN_ATTENTE'" class="btn btn-secondary"
+      <button *ngIf="auth.hasRole('ROLE_CLIENT') && reservation.statut === 'EN_ATTENTE'" class="btn btn-secondary"
         (click)="setStatus('ANNULEE')">
         <i class="bi bi-slash-circle me-1"></i>Annuler
       </button>
+
+      <a *ngIf="auth.hasRole('ROLE_CLIENT') && reservation.statut === 'EN_ATTENTE'" class="btn btn-primary"
+        [routerLink]="['/reservation/payment', reservation.id]">
+        <i class="bi bi-credit-card me-1"></i>Payer en ligne
+      </a>
     </div>
   </div>
 
@@ -104,24 +109,25 @@
         <div class="card-body p-0">
           <ul class="list-group list-group-flush">
             <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-              <span class="text-muted d-flex align-items-center"><i class="bi bi-credit-card me-2"></i>Mode de
+              <span class="text-muted d-flex align-items-center"><i class="bi bi-wallet2 me-2"></i>Mode de
                 paiement</span>
-              <span class="fw-semibold">{{ reservation.modePaiement || 'Sur place' }}</span>
+              <span class="fw-semibold text-main">{{ getModePaiementTexte(reservation.modePaiement) }}</span>
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center py-3">
               <span class="text-muted d-flex align-items-center">
                 <i class="bi bi-cash-coin me-2"></i>Statut du paiement
               </span>
-              <span class="badge"
-                [class.bg-success]="reservation.statut === 'CONFIRMEE' || reservation.statut === 'TERMINEE'"
-                [class.bg-warning]="reservation.statut === 'EN_ATTENTE'"
-                [class.bg-danger]="reservation.statut === 'ANNULEE' || reservation.statut === 'REFUSEE'">
-                {{ getPaiementStatutTexte(reservation.statut) }}
+              <span class="badge rounded-pill"
+                [class.bg-success]="reservation.statutPaiement === 'PAYE' || reservation.statut === 'CONFIRMEE'"
+                [class.bg-warning]="reservation.statutPaiement === 'EN_ATTENTE' && reservation.statut === 'EN_ATTENTE'"
+                [class.bg-danger]="reservation.statutPaiement === 'ANNULE' || reservation.statut === 'ANNULEE' || reservation.statut === 'REFUSEE'">
+                {{ getPaiementStatutTexte(reservation.statutPaiement, reservation.statut) }}
               </span>
             </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center py-3 bg-light">
-              <span class="fw-bold d-flex align-items-center"><i class="bi bi-wallet2 me-2"></i>Montant Total</span>
-              <span class="fs-5 fw-bold text-primary">{{ reservation.prixTotal ?? '0' }} $</span>
+            <li class="list-group-item d-flex justify-content-between align-items-center py-3 bg-light rounded-bottom">
+              <span class="fw-bold d-flex align-items-center text-dark"><i class="bi bi-receipt-cutoff me-2"></i>Net à
+                payer</span>
+              <span class="fs-4 fw-black text-primary">{{ reservation.prixTotal ?? '0' | number:'1.0-0' }} MRU</span>
             </li>
           </ul>
         </div>

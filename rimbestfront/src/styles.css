@@ -101,6 +101,17 @@ a:hover {
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--glass-border);
   box-shadow: 0 2px 20px rgba(14, 165, 233, .08);
+  z-index: 1050 !important;
+  /* Place well above the page content */
+}
+
+/* Ensure sticky booking cards don't cover the navbar */
+.premium-card.sticky-top,
+.card.sticky-top {
+  top: 6rem !important;
+  /* Clear the navbar */
+  z-index: 10 !important;
+  /* Extremely low so dropdown menues (z-index: 1000) go over */
 }
 
 .navbar-brand {

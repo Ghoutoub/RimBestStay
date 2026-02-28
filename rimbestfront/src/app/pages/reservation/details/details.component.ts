@@ -66,14 +66,30 @@ export class DetailsComponent {
     });
   }
 
-  getPaiementStatutTexte(statut: string): string {
-    switch (statut) {
-      case 'CONFIRMEE': return 'Payé';
-      case 'TERMINEE': return 'Soldé';
-      case 'EN_ATTENTE': return 'En attente';
-      case 'ANNULEE': return 'Annulé';
-      case 'REFUSEE': return 'Remboursé';
-      default: return 'Inconnu';
+  getPaiementStatutTexte(statutPaiement?: string, statutReservation?: string): string {
+    if (statutPaiement === 'PAYE') return 'Payé intégralement';
+    if (statutPaiement === 'PARTIELLEMENT_PAYE') return 'Acompte versé';
+    if (statutPaiement === 'ANNULE') return 'Paiement annulé';
+
+    // Fallback sur le statut de réservation si pas de statut paiement
+    switch (statutReservation) {
+      case 'CONFIRMEE': return 'Payé / Confirmé';
+      case 'TERMINEE': return 'Finalisé';
+      case 'ANNULEE': return 'Non payé';
+      case 'REFUSEE': return 'Refusé / Remboursé';
+      default: return 'En attente de paiement';
+    }
+  }
+
+  getModePaiementTexte(mode?: string): string {
+    if (!mode) return 'Paiement sur place';
+    switch (mode.toUpperCase()) {
+      case 'ESPECES':
+      case 'CASH': return 'Espèces / Cash';
+      case 'CARTE_BANCAIRE':
+      case 'CARD': return 'Carte Bancaire (En ligne)';
+      case 'VIREMENT': return 'Virement Bancaire';
+      default: return mode;
     }
   }
 

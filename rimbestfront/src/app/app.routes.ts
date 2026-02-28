@@ -80,7 +80,8 @@ export const routes: Routes = [
         path: 'reservation',
         canActivate: [authGuard],
         children: [
-          { path: 'details/:id', loadComponent: () => import('./pages/reservation/details/details.component').then(m => m.DetailsComponent) }
+          { path: 'details/:id', loadComponent: () => import('./pages/reservation/details/details.component').then(m => m.DetailsComponent) },
+          { path: 'payment/:id', loadComponent: () => import('./pages/client/payment-page/payment-page.component').then(m => m.PaymentPageComponent) }
         ]
       },
       {

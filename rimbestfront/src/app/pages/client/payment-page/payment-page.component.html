@@ -1,0 +1,214 @@
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Stepper -->
+            <div class="d-flex justify-content-between mb-5 px-5">
+                <div class="text-center">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center shadow-sm"
+                        style="width: 40px; height: 40px;">1</div>
+                    <p class="small mt-2 fw-bold text-main">Réservation</p>
+                </div>
+                <div class="flex-grow-1 mx-3 border-bottom mb-4" style="border-width: 2px !important;"></div>
+                <div class="text-center">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center shadow-sm"
+                        style="width: 40px; height: 40px;">2</div>
+                    <p class="small mt-2 fw-bold text-main">Paiement</p>
+                </div>
+                <div class="flex-grow-1 mx-3 border-bottom mb-4"
+                    style="border-width: 2px !important; border-color: #e2e8f0 !important;"></div>
+                <div class="text-center">
+                    <div class="rounded-circle bg-light text-muted d-inline-flex align-items-center justify-content-center border"
+                        style="width: 40px; height: 40px;">3</div>
+                    <p class="small mt-2 text-muted">Confirmation</p>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-lg overflow-hidden rounded-4">
+                <div class="row g-0">
+
+                    <!-- Summary Sidebar -->
+                    <div class="col-md-5 bg-premium-gradient p-4 p-lg-5 text-white">
+                        <h4 class="fw-bold mb-4">Total à payer</h4>
+                        <div *ngIf="reservation" class="d-flex flex-column gap-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fs-1 fw-black">{{ reservation.prixTotal ? (reservation.prixTotal |
+                                    number:'1.0-0') : '0' }}</span>
+                                <span class="fs-4 fw-bold">MRU</span>
+                            </div>
+
+                            <div class="bg-white bg-opacity-10 p-3 rounded-4 border border-white border-opacity-10">
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div class="bg-white rounded-circle p-2 text-primary d-flex align-items-center justify-content-center"
+                                        style="width:40px; height:40px;">
+                                        <i class="bi bi-buildings fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="small text-white text-opacity-75 mb-0">Établissement</p>
+                                        <p class="fw-bold mb-0">{{ reservation.hotelNom || 'Hôtel Rimbest' }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-3 mb-0">
+                                    <div class="bg-white rounded-circle p-2 text-primary d-flex align-items-center justify-content-center"
+                                        style="width:40px; height:40px;">
+                                        <i class="bi bi-door-open fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="small text-white text-opacity-75 mb-0">Hébergement</p>
+                                        <p class="fw-bold mb-0">Chambre {{ reservation.chambreNumero }} ({{
+                                            reservation.chambreType }})</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white bg-opacity-10 p-3 rounded-4 border border-white border-opacity-10">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <p class="small text-white text-opacity-75 mb-0">Arrivée</p>
+                                        <p class="fw-bold mb-0 small">{{ reservation.dateDebut | date:'dd MMM yyyy' }}
+                                        </p>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <p class="small text-white text-opacity-75 mb-0">Voyageurs</p>
+                                        <p class="fw-bold mb-0 small">{{ reservation.nbPersonnes }} personne(s)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-auto pt-4 border-top border-white border-opacity-10">
+                            <p class="small d-flex align-items-center gap-2 mb-0">
+                                <i class="bi bi-shield-check fs-4"></i>
+                                <span>Transactions sécurisées par protocole SSL 256-bit</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form Section -->
+                    <div class="col-md-7 bg-white p-4 p-lg-5">
+                        <h3 class="fw-black text-main mb-4">Finaliser mon paiement</h3>
+
+                        <!-- Method Selector -->
+                        <div class="row g-3 mb-5">
+                            <div class="col-6">
+                                <button type="button"
+                                    class="btn w-100 p-3 border rounded-4 d-flex flex-column align-items-center gap-2 transition-all shadow-hover"
+                                    [ngClass]="paymentMethod === 'CARD' ? 'border-primary bg-primary-subtle border-2' : 'border-light bg-light opacity-75'"
+                                    (click)="setMethod('CARD')">
+                                    <i class="bi bi-credit-card-2-front fs-2"
+                                        [class.text-primary]="paymentMethod === 'CARD'"></i>
+                                    <span class="small fw-bold">Carte Bancaire</span>
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button"
+                                    class="btn w-100 p-3 border rounded-4 d-flex flex-column align-items-center gap-2 transition-all shadow-hover"
+                                    [ngClass]="paymentMethod === 'CASH' ? 'border-primary bg-primary-subtle border-2' : 'border-light bg-light opacity-75'"
+                                    (click)="setMethod('CASH')">
+                                    <i class="bi bi-cash-stack fs-2"
+                                        [class.text-primary]="paymentMethod === 'CASH'"></i>
+                                    <span class="small fw-bold">Payer sur place</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div *ngIf="success"
+                            class="alert alert-success border-0 rounded-4 d-flex align-items-center gap-3 p-4 animate__animated animate__fadeIn mb-4">
+                            <div class="bg-success text-white rounded-circle p-2 d-inline-flex shadow-sm">
+                                <i class="bi bi-check-lg fs-4"></i>
+                            </div>
+                            <div>
+                                <h6 class="alert-heading fw-bold mb-1">Paiement validé !</h6>
+                                <p class="small mb-0 opacity-75">Redirection vers vos réservations...</p>
+                            </div>
+                        </div>
+
+                        <div *ngIf="error"
+                            class="alert alert-danger border-0 rounded-4 d-flex align-items-center gap-3 animate__animated animate__headShake mb-4">
+                            <i class="bi bi-exclamation-triangle-fill fs-4 text-danger"></i>
+                            <span class="small fw-bold">{{ error }}</span>
+                        </div>
+
+                        <!-- Card Form -->
+                        <form *ngIf="paymentMethod === 'CARD' && !success" [formGroup]="paymentForm"
+                            (ngSubmit)="onSubmit()">
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-muted mb-2">Titulaire de la carte</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0 px-3"><i
+                                            class="bi bi-person text-secondary"></i></span>
+                                    <input type="text" formControlName="cardHolderName"
+                                        class="form-control bg-light border-0 py-2 ms-1 rounded-end"
+                                        placeholder="NOM COMPLET">
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-muted mb-2">Numéro de carte</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0 px-3"><i
+                                            class="bi bi-credit-card text-secondary"></i></span>
+                                    <input type="text" formControlName="cardNumber"
+                                        class="form-control bg-light border-0 py-2 ms-1 rounded-end"
+                                        placeholder="0000 0000 0000 0000">
+                                </div>
+                                <div class="mt-2 x-small d-flex align-items-center gap-1 text-info fw-semibold">
+                                    <i class="bi bi-info-circle"></i>
+                                    <span>Test: 4242 4242 4242 4242</span>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-5">
+                                <div class="col-7">
+                                    <label class="form-label small fw-bold text-muted mb-2">Expiration</label>
+                                    <input type="text" formControlName="expiryDate"
+                                        class="form-control bg-light border-0 py-2 text-center" placeholder="MM / YY">
+                                </div>
+                                <div class="col-5">
+                                    <label class="form-label small fw-bold text-muted mb-2">CVC / CVV</label>
+                                    <input type="password" formControlName="cvv"
+                                        class="form-control bg-light border-0 py-2 text-center" placeholder="•••">
+                                </div>
+                            </div>
+
+                            <button type="submit" [disabled]="paymentForm.invalid || loading"
+                                class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 mb-3">
+                                <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+                                <i *ngIf="!loading" class="bi bi-lock-fill"></i>
+                                {{ loading ? 'Traitement sécurisé...' : 'Payer ' + (reservation?.prixTotal |
+                                number:'1.0-0') + ' MRU' }}
+                            </button>
+                        </form>
+
+                        <!-- Cash Notice -->
+                        <div *ngIf="paymentMethod === 'CASH' && !success" class="animate__animated animate__fadeIn">
+                            <div class="p-4 bg-light rounded-4 border border-warning border-opacity-25 mb-4">
+                                <h6 class="fw-bold text-main mb-2"><i
+                                        class="bi bi-info-circle-fill text-warning me-2"></i>Paiement à l'arrivée</h6>
+                                <p class="small text-muted mb-0">
+                                    En choisissant ce mode, votre réservation est immédiatement prise en compte. Vous
+                                    réglerez la totalité du montant directement à l'établissement lors de votre
+                                    enregistrement.
+                                </p>
+                            </div>
+                            <button (click)="onSubmit()" [disabled]="loading"
+                                class="btn btn-main w-100 py-3 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                                <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+                                {{ loading ? 'Validation...' : 'Confirmer ma réservation' }}
+                            </button>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <a [routerLink]="['/reservations/client']" class="text-muted small text-decoration-none">
+                                <i class="bi bi-chevron-left"></i> Retour aux réservations
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

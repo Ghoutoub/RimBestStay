@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule, NgIf, NgFor } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 import { ReservationService } from '../../../core/services/reservation.service';
 import { HotelService, Hotel } from '../../../core/services/hotel.service';
@@ -34,6 +35,7 @@ export class AddComponent {
   private chambreService = inject(ChambreService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  auth = inject(AuthService);
 
   errorMsg = '';
   okMsg = '';

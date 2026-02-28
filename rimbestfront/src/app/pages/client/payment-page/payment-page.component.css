@@ -1,0 +1,36 @@
+.bg-premium-gradient {
+    background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+}
+
+.shadow-hover {
+    transition: all 0.3s ease;
+}
+
+.shadow-hover:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.transition-all {
+    transition: all 0.2s ease-in-out;
+}
+
+.form-control:focus {
+    background-color: #fff !important;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    border-color: #0ea5e9 !important;
+}
+
+.x-small {
+    font-size: 0.75rem;
+}
+
+.bg-primary-subtle {
+    background-color: rgba(14, 165, 233, 0.08) !important;
+}
+
+@media (max-width: 768px) {
+    .col-md-5 {
+        padding: 2rem !important;
+    }
+}
